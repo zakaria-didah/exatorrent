@@ -3,26 +3,20 @@
 
   export let bytescompleted: number;
   export let length: number;
-  export let offset: number;
 
   let progress: number;
 
-  $: progress = (bytescompleted / length) * 100;
+  $: progress = length > 0 ? (bytescompleted / length) * 100 : 0;
 </script>
 
-<div class="space-y-1.5 mt-1">
-  <div class="bg-white/10 rounded-full overflow-hidden h-1.5">
-    <div class="bg-violet-500 h-full rounded-full transition-all duration-500 ease-out" style="width:{progress ? progress : 0}%"></div>
+<div class="space-y-1 mt-1">
+  <div class="bg-white/10 rounded-full overflow-hidden h-1">
+    <div class="bg-violet-500 h-full rounded-full transition-all duration-500 ease-out" style="width:{progress}%"></div>
   </div>
-  <div class="text-slate-400 flex justify-between text-xs font-medium">
-    <div class="break-all">
-      {fileSize(bytescompleted)} / {fileSize(length)} <span class="text-slate-500">(Off. {offset})</span>
-    </div>
-    <div class="font-semibold {progress >= 100 ? 'text-violet-400' : 'text-slate-300'}">
-      {progress?.toLocaleString('en-US', {
-        maximumFractionDigits: 1,
-        minimumFractionDigits: 1
-      })}%
-    </div>
+  <div class="text-slate-500 flex justify-between text-xs tabular-nums">
+    <span>{fileSize(bytescompleted)} / {fileSize(length)}</span>
+    <span class="font-medium {progress >= 100 ? 'text-violet-400' : 'text-slate-400'}">
+      {progress.toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%
+    </span>
   </div>
 </div>

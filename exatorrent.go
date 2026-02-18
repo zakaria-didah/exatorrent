@@ -39,7 +39,7 @@ func main() {
 				core.Err.Fatal(http.ServeTLS(usock, handler, core.Flagconfig.TLSCertPath, core.Flagconfig.TLSKeyPath))
 			} else {
 				core.Err.Fatal(http.Serve(usock, handler))
-			}
+			} 
 		}()
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
