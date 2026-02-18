@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -18,11 +19,29 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// Logger is the structured logger for exatorrent.
+var Logger *slog.Logger
+
+// InitLogger initializes the structured logger with the given level and format.
+func InitLogger(level slog.Level, jsonFormat bool) {
+	opts := &slog.HandlerOptions{Level: level}
+	var handler slog.Handler
+	if jsonFormat {
+		handler = slog.NewJSONHandler(os.Stderr, opts)
+	} else {
+		handler = slog.NewTextHandler(os.Stderr, opts)
+	}
+	Logger = slog.New(handler)
+	slog.SetDefault(Logger)
+}
+
 var (
 	Engine     Eng
-	Info       = log.New(os.Stderr, "[INFO] ", log.LstdFlags) // Info Logger
-	Warn       = log.New(os.Stderr, "[WARN] ", log.LstdFlags) // Logger for Warnings
-	Err        = log.New(os.Stderr, "[ERR ] ", log.LstdFlags) // Error Logger
+	// Legacy loggers kept for backward compatibility with anacrolix/torrent logger format.
+	// All new code should use slog directly via the Logger variable.
+	Info       = log.New(os.Stderr, "[INFO] ", log.LstdFlags)
+	Warn       = log.New(os.Stderr, "[WARN] ", log.LstdFlags)
+	Err        = log.New(os.Stderr, "[ERR ] ", log.LstdFlags)
 	Flagconfig = struct {                                     // Configuration for HTTP Handlers
 		ListenAddress string
 		UnixSocket    string
@@ -368,6 +387,8 @@ type EngConfig struct {
 	ListenCompletion bool   `json:"listencompletion"`
 	HookPostURL      string `json:"hookposturl"`
 	NotifyOnComplete bool   `json:"notifyoncomplete"`
+
+	AllowedOrigins []string `json:"allowedorigins"` // CORS allowed origins. Empty means same-origin only. Use ["*"] for all.
 }
 
 func (ec *EngConfig) GetDTU() (ret bool) {
@@ -476,6 +497,9 @@ func (ec *EngConfig) DRCI() (ret bool) {
 	Configmu.Unlock()
 	return
 }
+
+// SequentialMode tracks which torrents should download sequentially (by infohash hex string).
+var SequentialMode sync.Map
 
 type ConReq struct {
 	Command string `json:"command"`

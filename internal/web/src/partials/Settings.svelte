@@ -93,339 +93,218 @@
   };
 </script>
 
-<div class="mx-auto max-w-xl">
-  <div
-    class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
-    <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <div class="w-0 flex-1 flex items-center">
-        <p class="mx-1 font-medium  truncate">
-          User Settings
-          {#if localStorage.getItem('exausertype') === 'admin'} <span
-            class="text-xs font-semibold inline-block py-1 px-2  rounded-md text-neutral-300 bg-zinc-700 ml-3 last:mr-0 mr-1">admin</span>{/if}
-        </p>
+<div class="mx-auto max-w-2xl px-2 sm:px-0">
+  <!-- User Settings Card -->
+  <div class="bg-slate-900 rounded-xl m-3 overflow-hidden border border-slate-700/40">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700/30">
+      <div class="flex items-center gap-2">
+        <h3 class="font-medium text-slate-200">User Settings</h3>
+        {#if localStorage.getItem('exausertype') === 'admin'}
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-600/20 text-violet-400">admin</span>
+        {/if}
       </div>
     </div>
 
-    <div class="flex flex-col">
-      <div class="flex bg-neutral-800 rounded-md my-2 appearance-none border border-neutral-800 w-full">
+    <div class="p-4 space-y-3">
+      <div class="flex bg-slate-800/50 rounded-xl border border-slate-700/30 overflow-hidden">
         {#if editmode === false}
           <input id="username" name="username" type="text"
-                 class=" bg-neutral-800 appearance-none rounded-md w-full flex-grow px-3 py-2  border-none placeholder-neutral-500 text-neutral-100  focus:outline-none"
+                 class="bg-transparent w-full flex-grow px-3.5 py-2.5 text-sm border-none placeholder-slate-400 text-slate-100 focus:outline-none"
                  placeholder={localStorage.getItem('exausername')} disabled />
           <button
             type="button"
-            class="focus:outline-none"
-            on:click={() => {
-              editmode = true;
-            }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-neutral-400 my-2 mx-2 flex-grow" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            aria-label="Edit password"
+            class="flex items-center justify-center w-11 flex-shrink-0 transition-colors duration-150 hover:bg-slate-700/40"
+            on:click={() => { editmode = true; }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </button>
-        {:else if editmode === true}
+        {:else}
           <input id="password" name="password" type="text"
-                 class=" bg-neutral-800 appearance-none rounded-md w-full flex-grow px-3 py-2  border-none placeholder-neutral-500 text-neutral-200  focus:outline-none"
+                 class="bg-transparent w-full flex-grow px-3.5 py-2.5 text-sm border-none placeholder-slate-500 text-slate-200 focus:outline-none"
                  placeholder="Enter New Password" bind:value={newpassword} />
           <button
             type="button"
-            class="focus:outline-none"
-            on:click={() => {
-              editmode = false;
-            }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400 my-2 mx-2 flex-grow" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
+            aria-label="Cancel"
+            class="flex items-center justify-center w-10 flex-shrink-0 transition-colors duration-150 hover:bg-slate-700/40"
+            on:click={() => { editmode = false; }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <button type="button" class="focus:outline-none" on:click={changepw}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400 my-2 mx-2 flex-grow" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
+          <button type="button" aria-label="Save password" class="flex items-center justify-center w-10 flex-shrink-0 transition-colors duration-150 hover:bg-slate-700/40" on:click={changepw}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </button>
         {/if}
       </div>
-      <div
-        class="grid grid-flow-col grid-cols-4 pr-2 bg-neutral-800 rounded-md my-2 appearance-none border border-neutral-800 w-full">
-        <div
-          class=" bg-neutral-800  col-span-3 appearance-none rounded-md w-full flex-grow px-3 py-2  border-none  text-neutral-300  focus:outline-none">
-          Don't Start Torrents on Add
-        </div>
-        <div class="flex items-center justify-end w-full my-2 mr-2">
-          <label for="dontstarttoggle" class="flex items-center cursor-pointer">
-            <div class="relative">
-              <input type="checkbox" class="rounded text-indigo-700 bg-neutral-800 form-checkbox" bind:checked={ds} />
-            </div>
+
+      <div class="flex items-center justify-between bg-slate-800/50 rounded-xl border border-slate-700/30 px-4 py-3">
+        <span class="text-sm text-slate-300">Don't Start Torrents on Add</span>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" class="sr-only peer" bind:checked={ds} />
+          <div class="w-9 h-5 bg-slate-600 peer-focus:ring-2 peer-focus:ring-violet-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
+        </label>
+      </div>
+
+      {#if $isAdmin === true}
+        <div class="flex items-center justify-between bg-slate-800/50 rounded-xl border border-slate-700/30 px-4 py-3">
+          <span class="text-sm text-slate-300">Admin Mode</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" class="sr-only peer" bind:checked={$adminmode} />
+            <div class="w-9 h-5 bg-slate-600 peer-focus:ring-2 peer-focus:ring-violet-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
           </label>
         </div>
-      </div>
-      {#if $isAdmin === true}
-        <div
-          class="grid grid-flow-col grid-cols-4 pr-2 bg-neutral-800 my-2 appearance-none border border-neutral-800 w-full rounded-md">
-          <div
-            class=" bg-neutral-800  col-span-3 appearance-none  w-full flex-grow px-3 py-2  border-none  text-neutral-300  focus:outline-none">
-            Admin Mode
-          </div>
-          <div class="flex items-center justify-end w-full my-2 mr-2">
-            <label for="dontstarttoggle" class="flex items-center cursor-pointer">
-              <div class="relative">
-                <input type="checkbox" class="rounded text-indigo-700 bg-neutral-800 form-checkbox"
-                       bind:checked={$adminmode} />
-              </div>
-            </label>
-          </div>
-        </div>
       {/if}
     </div>
   </div>
-</div>
 
-<div class="mx-auto max-w-xl">
-  <div
-    class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
-    <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <div class="w-0 flex-1 flex items-center" on:click={diskusageaction}>
-        <p class="ml-3 font-medium  truncate">Disk Usage</p>
+  <!-- Disk Usage Card -->
+  <div class="bg-slate-900 rounded-xl m-3 overflow-hidden border border-slate-700/40">
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-slate-800 cursor-pointer" role="button" tabindex="0" on:click={diskusageaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); diskusageaction(); } }}>
+      <h3 class="font-medium text-slate-200">Disk Usage</h3>
+      <div class="flex items-center gap-2">
+        {#if diskstatsOpen}
+          <button
+            type="button"
+            aria-label="Refresh"
+            class="p-1.5 rounded-lg bg-slate-700/40 hover:bg-slate-600/40 transition-colors duration-150"
+            on:click|stopPropagation={() => { Send({ command: 'diskusage' }); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        {/if}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {diskstatsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
+    </div>
 
-      {#if diskstatsOpen === true}
-        <button
-          type="button"
-          class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0"
-          on:click={() => {
-            Send({
-              command: 'diskusage'
-            });
-          }}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      {/if}
+    {#if diskstatsOpen}
+      <div class="px-4 pb-4 space-y-2 text-sm text-slate-300">
+        <div class="flex justify-between"><span class="text-slate-400">Total</span><span>{fileSize($diskstats?.total)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Free</span><span>{fileSize($diskstats?.free)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Used</span><span>{fileSize($diskstats?.used)} ({$diskstats?.usedPercent}%)</span></div>
+      </div>
+    {/if}
+  </div>
 
-      <button type="button" class="-mr-1 flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1"
-              on:click={diskusageaction}>
-        {#if diskstatsOpen === true}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  {#if $isAdmin === true}
+    <!-- Misc Settings Card (Admin) -->
+    <div class="bg-slate-900 rounded-xl m-3 overflow-hidden border border-slate-700/40">
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-slate-800 cursor-pointer" role="button" tabindex="0" on:click={miscsettingsaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); miscsettingsaction(); } }}>
+        <h3 class="font-medium text-slate-200">Misc Settings</h3>
+        <div class="flex items-center gap-2">
+          {#if miscOpen}
+            <button
+              type="button"
+              aria-label="Refresh"
+              class="p-1.5 rounded-lg bg-slate-700/40 hover:bg-slate-600/40 transition-colors duration-150"
+              on:click|stopPropagation={() => { Send({ command: 'nooftrackersintrackerdb', aop: 1 }); }}>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          {/if}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {miscOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
           </svg>
-        {/if}
-      </button>
-    </div>
+        </div>
+      </div>
 
-    <div class="flex flex-col">
-      {#if diskstatsOpen === true}
-        <div class="m-1 p-1 break-all">
-          Total: {fileSize($diskstats?.total)}
-        </div>
-        <div class="m-1 p-1 break-all">
-          Free: {fileSize($diskstats?.free)}
-        </div>
-        <div class="m-1 p-1 break-all">
-          Used: {fileSize($diskstats?.used)} ({$diskstats?.usedPercent} %)
+      {#if miscOpen}
+        <div class="px-4 pb-4 space-y-3">
+          <div class="text-sm text-slate-300">
+            Total Trackers in TrackerDB: <span class="font-semibold text-slate-100">{$nooftrackersintrackerdb}</span>
+          </div>
+          <div class="grid gap-2">
+            <button
+              class="w-full bg-slate-700/40 hover:bg-slate-600/40 text-slate-200 py-2.5 text-sm rounded-xl transition-colors duration-150"
+              on:click={() => { Send({ command: 'deletetrackersintrackerdb', data1: 'all', aop: 1 }); }}>Delete All Trackers in TrackerDB</button>
+            <button
+              class="w-full bg-slate-700/40 hover:bg-slate-600/40 text-slate-200 py-2.5 text-sm rounded-xl transition-colors duration-150"
+              on:click={() => { Send({ command: 'trackerdbrefresh', aop: 1 }); }}>Refresh TrackerDB</button>
+            <button
+              class="w-full bg-slate-700/40 hover:bg-slate-600/40 text-slate-200 py-2.5 text-sm rounded-xl transition-colors duration-150"
+              on:click={() => { Send({ command: 'stoponseedratio', aop: 1 }); }}>Seed Ratio Check</button>
+          </div>
+          <div class="space-y-2">
+            <input type="text" bind:value={trdelno} required
+                   class="w-full bg-slate-800/50 rounded-xl px-3.5 py-2.5 border border-violet-700/30 placeholder-slate-500 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                   placeholder="Delete N trackers from TrackerDB" />
+            <button
+              type="button"
+              class="w-full bg-slate-700/40 hover:bg-slate-600/40 text-slate-200 py-2.5 text-sm rounded-xl transition-colors duration-150"
+              on:click={() => { Send({ command: 'deletetrackersintrackerdb', data1: trdelno, aop: 1 }); }}>Delete Trackers</button>
+          </div>
+          <div class="space-y-2">
+            <input type="text" bind:value={srno} required
+                   class="w-full bg-slate-800/50 rounded-xl px-3.5 py-2.5 border border-violet-700/30 placeholder-slate-500 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                   placeholder="Stop on reaching this seed ratio" />
+            <button
+              type="button"
+              class="w-full bg-slate-700/40 hover:bg-slate-600/40 text-slate-200 py-2.5 text-sm rounded-xl transition-colors duration-150"
+              on:click={() => { Send({ command: 'stoponseedratio', data1: srno, aop: 1 }); }}>Stop Torrents</button>
+          </div>
         </div>
       {/if}
     </div>
-  </div>
-</div>
 
-{#if $isAdmin === true}
-  <div class="mx-auto max-w-xl">
-    <div
-      class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
-      <div class="flex items-center justify-between flex-wrap py-1 px-3">
-        <div class="w-0 flex-1 flex items-center" on:click={miscsettingsaction}>
-          <p class="ml-3 font-medium  truncate">Misc Settings</p>
-        </div>
-
-        {#if miscOpen === true}
-          <button
-            type="button"
-            class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0"
-            on:click={() => {
-              Send({
-                command: 'nooftrackersintrackerdb',
-                aop: 1
-              });
-            }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-
-        <button type="button" class="-mr-1 flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1"
-                on:click={miscsettingsaction}>
-          {#if miscOpen === true}
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-            </svg>
-          {:else}
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          {/if}
-        </button>
-      </div>
-
-      <div class="flex flex-col">
-        {#if miscOpen === true}
-          <div class="m-1 p-1 break-all">
-            Total Number of Trackers in TrackerDB: {$nooftrackersintrackerdb}
-          </div>
-          <button
-            class="m-2 bg-zinc-800 py-3 max-w-3xl rounded-md justify-center"
-            on:click={() => {
-              Send({
-                command: 'deletetrackersintrackerdb',
-                data1: 'all',
-                aop: 1
-              });
-            }}>Delete All Trackers in TrackerDB
-          </button>
-          <button
-            class="m-2 bg-zinc-800 py-3 max-w-3xl rounded-md justify-center"
-            on:click={() => {
-              Send({
-                command: 'trackerdbrefresh',
-                aop: 1
-              });
-            }}>Refresh TrackerDB
-          </button>
-          <button
-            class="m-2 bg-zinc-800 py-3 max-w-3xl rounded-md justify-center"
-            on:click={() => {
-              Send({
-                command: 'stoponseedratio',
-                aop: 1
-              });
-            }}>Seed Ratio Check
-          </button>
-          <div class="flex flex-col mt-1">
-            <input type="text" bind:value={trdelno} required
-                   class="m-1 bg-neutral-800 appearance-none rounded-md max-w-3xl px-3 py-2 border border-blue-800 placeholder-neutral-500 text-neutral-200  focus:outline-none sm:text-sm mx-1"
-                   placeholder="Delete these many trackers from TrackerDB" />
+    <!-- Engine Settings Card (Admin) -->
+    <div class="bg-slate-900 rounded-xl m-3 overflow-hidden border border-slate-700/40">
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-slate-800 cursor-pointer" role="button" tabindex="0" on:click={enginesettingsOpen} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enginesettingsOpen(); } }}>
+        <h3 class="font-medium text-slate-200">Engine Settings</h3>
+        <div class="flex items-center gap-2">
+          {#if engsettingsOpen}
             <button
               type="button"
-              class="m-1 bg-zinc-800 py-3 max-w-3xl rounded-md justify-center noHL"
-              on:click={() => {
-                Send({
-                  command: 'deletetrackersintrackerdb',
-                  data1: trdelno,
-                  aop: 1
-                });
-              }}>
-              Delete Trackers
-            </button>
-          </div>
-          <div class="flex flex-col mt-3">
-            <input type="text" bind:value={srno} required
-                   class="mt-3 bg-neutral-800 appearance-none rounded-md max-w-3xl  px-3 py-2 border border-blue-800 placeholder-neutral-500 text-neutral-200  focus:outline-none sm:text-sm mx-1"
-                   placeholder="Stop Torrents on Reaching this Seedratio" />
+              class="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium transition-colors duration-150"
+              on:click|stopPropagation={() => {
+                if (engsettingsstring?.length === 0) {
+                  toast.error('Empty Config!');
+                } else {
+                  let b64config = window.btoa(engsettingsstring);
+                  Send({ command: 'updateconfig', data1: b64config, aop: 1 });
+                }
+              }}>Update</button>
             <button
               type="button"
-              class="m-1 bg-zinc-800 py-3 max-w-3xl rounded-md justify-center noHL"
-              on:click={() => {
-                Send({
-                  command: 'stoponseedratio',
-                  data1: srno,
-                  aop: 1
-                });
-              }}>
-              Stop Torrents
+              aria-label="Refresh"
+              class="p-1.5 rounded-lg bg-slate-700/40 hover:bg-slate-600/40 transition-colors duration-150"
+              on:click|stopPropagation={() => { Send({ command: 'getconfig', aop: 1 }); }}>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
-          </div>
-        {/if}
-      </div>
-    </div>
-  </div>
-
-  <div class="mx-auto max-w-xl ">
-    <div
-      class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
-      <div class="flex items-center justify-between flex-wrap py-1 px-3">
-        <div class="w-0 flex-1 flex items-center" on:click={enginesettingsOpen}>
-          <p class="ml-3 font-medium  truncate">Engine Settings</p>
-        </div>
-
-        {#if engsettingsOpen === true}
-          <button
-            class="bg-indigo-700 text-white p-2 rounded-md focus:outline-none flex-shrink-0 mx-1"
-            type="button"
-            on:click={() => {
-              if (engsettingsstring?.length === 0) {
-                toast.error('Empty Config!');
-              } else {
-                let b64config = window.btoa(engsettingsstring);
-                Send({
-                  command: 'updateconfig',
-                  data1: b64config,
-                  aop: 1
-                });
-              }
-            }}>Update
-          </button>
-          <button
-            type="button"
-            class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1"
-            on:click={() => {
-              Send({
-                command: 'getconfig',
-                aop: 1
-              });
-            }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-
-        <button type="button" class="-mr-1 flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1"
-                on:click={enginesettingsOpen}>
-          {#if engsettingsOpen === true}
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-            </svg>
-          {:else}
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
           {/if}
-        </button>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {engsettingsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
 
-      <div class="flex flex-col gap-1">
-        {#if engsettingsOpen === true && $engconfig != null}
+      {#if engsettingsOpen && $engconfig != null}
+        <div class="px-4 pb-4">
           <textarea
-            class="form-textarea bg-neutral-900 border-1 border-blue-800 max-w-3xl text-white resize-y appearance-none h-screen rounded-md"
-            bind:value={engsettingsstring} />
-        {/if}
-      </div>
+            class="w-full bg-slate-800/50 border border-slate-700/30 text-slate-200 text-sm font-mono resize-y h-96 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+            bind:value={engsettingsstring}></textarea>
+        </div>
+      {/if}
     </div>
-  </div>
-{/if}
+  {/if}
 
-<div class="mx-auto max-w-xl flex items-center mt-2">
-  <button
-    type="button"
-    class="w-full my-2 mx-3 flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black focus:outline-none"
-    on:click={() => {
-      slocation.goto('/about');
-    }}>About exatorrent
-  </button>
+  <div class="mx-3 mt-2 mb-6">
+    <button
+      type="button"
+      class="w-full py-3 text-sm font-medium rounded-xl text-slate-400 bg-slate-900 border border-slate-700/40 hover:bg-slate-800 hover:text-slate-300 transition-all duration-150 focus:outline-none"
+      on:click={() => { slocation.goto('/about'); }}>
+      About exatorrent
+    </button>
+  </div>
 </div>

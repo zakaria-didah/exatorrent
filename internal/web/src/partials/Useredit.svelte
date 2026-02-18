@@ -44,14 +44,15 @@
   };
 </script>
 
-<div class="text-neutral-200 bg-neutral-900 px-3 py-3 rounded-md w-full my-1">
+<div class="text-slate-200 bg-slate-900 px-3 py-3 rounded-md w-full my-1">
   <div class="flex flex-col justify-between flex-wrap py-1">
     <div class="flex flex-row justify-between">
       <div class="font-medium break-all text-left mx-1">{username}</div>
       <div class="flex">
         <button
           type="button"
-          class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1 noHL"
+          aria-label="Edit user"
+          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1 noHL"
           on:click={() => {
             usereditmode = !usereditmode;
           }}>
@@ -62,7 +63,8 @@
 
         <button
           type="button"
-          class="flex p-2 rounded-md bg-red-900 focus:outline-none flex-shrink-0 mx-1 noHL"
+          aria-label="Remove user"
+          class="flex p-2 rounded-md bg-slate-800 focus:outline-none flex-shrink-0 mx-1 noHL"
           on:click={() => {
             Send({
               command: 'removeuser',
@@ -77,7 +79,8 @@
 
         <button
           type="button"
-          class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1 noHL"
+          aria-label="View user torrents"
+          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1 noHL"
           on:click={() => {
             slocation.goto(`/user/${username}`);
           }}>
@@ -91,10 +94,11 @@
   </div>
   {#if usereditmode === true}
     <div class="flex mt-1">
-      <input id="changepw" type="text" bind:value={newpw} required class=" bg-neutral-800 appearance-none rounded-md w-full flex-grow px-3 py-2 border-none placeholder-neutral-500 text-neutral-200  focus:outline-none sm:text-sm mx-1" placeholder="Enter New Password" />
+      <input id="changepw" type="text" bind:value={newpw} required class=" bg-slate-900 appearance-none rounded-md w-full flex-grow px-3 py-2 border-none placeholder-slate-500 text-slate-200  focus:outline-none sm:text-sm mx-1" placeholder="Enter New Password" />
       <button
         type="button"
-        class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1 noHL"
+        aria-label="Revoke token"
+        class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1 noHL"
         on:click={() => {
           Send({
             command: 'revoketoken',
@@ -106,12 +110,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       </button>
-      <select class="bg-neutral-800 text-neutral-200 mx-1 rounded-md" bind:value={selected}>
+      <select class="bg-slate-900 text-slate-200 mx-1 rounded-md" bind:value={selected}>
         <option value="user">User</option>
         <option value="disabled">Disabled</option>
         <option value="admin">Admin</option>
       </select>
-      <button class="bg-indigo-700 text-white p-3 rounded-md" on:click={updateuser}>Update</button>
+      <button class="bg-violet-600 text-white p-3 rounded-md" on:click={updateuser}>Update</button>
     </div>
   {/if}
 </div>

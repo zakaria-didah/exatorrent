@@ -30,6 +30,7 @@ type Torrent1 struct {
 	ActivePeers      int      `json:"activepeers,omitempty"`
 	ConnectedSeeders int      `json:"connectedseeders,omitempty"`
 	AnnounceList     []string `json:"announcelist,omitempty"`
+	Category         string   `json:"category,omitempty"`
 }
 
 type Torrent2 struct {
@@ -101,6 +102,7 @@ func GetTorrent(ih metainfo.Hash) (ret Torrent1) {
 	ret.ActivePeers = stats.ActivePeers
 	ret.ConnectedSeeders = stats.ConnectedSeeders
 	ret.AnnounceList = info.AnnounceList.DistinctValues()
+	ret.Category = Engine.CatDb.Get(ih.HexString())
 
 	return
 }

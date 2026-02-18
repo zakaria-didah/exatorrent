@@ -6,9 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -56,6 +58,8 @@ func Initialize() {
 	var err error
 	var auser string
 	var pw bool
+	var loglevel string
+	var logjson bool
 
 	flag.Usage = func() {
 		_, _ = fmt.Fprintf(flag.CommandLine.Output(), "exatorrent is bittorrent client\n\n")
@@ -68,7 +72,7 @@ func Initialize() {
 		_, _ = fmt.Fprintf(flag.CommandLine.Output(), " -%-5v   %v\n", "help", "<opt>  Print this Help")
 		_, _ = fmt.Fprintf(flag.CommandLine.Output(), "\nVersion: %s", Version)
 		_, _ = fmt.Fprintf(flag.CommandLine.Output(), "\nLicense: GPLv3")
-		_, _ = fmt.Fprintf(flag.CommandLine.Output(), "\nSource : https://github.com/varbhat/exatorrent\n")
+		_, _ = fmt.Fprintf(flag.CommandLine.Output(), "\nSource : https://github.com/zakaria-didah/exatorrent\n")
 	}
 
 	flag.StringVar(&Flagconfig.ListenAddress, "addr", ":5000", `<addr> Listen Address (Default: ":5000")`)
@@ -80,6 +84,9 @@ func Initialize() {
 	flag.BoolVar(&pw, "passw", false, `<opt>  Set Default admin password from "EXAPASSWORD" environment variable`)
 	flag.BoolVar(&engc, "engc", false, "<opt>  Generate Custom Engine Configuration")
 	flag.BoolVar(&torcc, "torc", false, "<opt>  Generate Custom Torrent Client Configuration")
+	flag.StringVar(&loglevel, "loglevel", "info", `<level> Log level: debug, info, warn, error (Default: "info")`)
+	flag.BoolVar(&logjson, "logjson", false, "<opt>  Output logs in JSON format")
+	flag.StringVar(&TMDBAPIKey, "tmdbkey", "", "<key>  TMDB API key for movie poster lookup")
 	flag.Parse()
 
 	if len(flag.Args()) != 0 {
@@ -87,6 +94,21 @@ func Initialize() {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	// Initialize structured logger
+	var sloglevel slog.Level
+	switch strings.ToLower(loglevel) {
+	case "debug":
+		sloglevel = slog.LevelDebug
+	case "warn":
+		sloglevel = slog.LevelWarn
+	case "error":
+		sloglevel = slog.LevelError
+	default:
+		sloglevel = slog.LevelInfo
+	}
+	InitLogger(sloglevel, logjson)
+	slog.Info("structured logger initialized", "level", loglevel, "json", logjson)
 
 	// Display All Flag Configurations Provided to exatorrent
 	if Flagconfig.UnixSocket != "" {

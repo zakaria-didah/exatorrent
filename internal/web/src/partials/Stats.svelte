@@ -41,14 +41,14 @@
   };
 </script>
 
-<div class="mx-auto max-w-xl">
-  <div class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
+<div class="mx-auto max-w-5xl">
+  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
     <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <div class="w-0 flex-1 flex items-center" on:click={devinfoaction}>
+      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={devinfoaction}>
         <p class="ml-3 font-medium  truncate">Device Info</p>
-      </div>
+      </button>
 
-      <button type="button" class="-mr-1 flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1" on:click={devinfoaction}>
+      <button type="button" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={devinfoaction} aria-label="Toggle device info">
         {#if deviceinfoOpen === true}
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -79,17 +79,18 @@
   </div>
 </div>
 
-<div class="mx-auto max-w-xl">
-  <div class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
+<div class="mx-auto max-w-5xl">
+  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
     <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <div class="w-0 flex-1 flex items-center" on:click={devicestatsaction}>
+      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={devicestatsaction}>
         <p class="ml-3 font-medium  truncate">Device Stats</p>
-      </div>
+      </button>
 
       {#if devicestatsOpen === true}
         <button
           type="button"
-          class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0"
+          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0"
+          aria-label="Refresh"
           on:click={() => {
             Send({ command: 'machstats', aop: 1 });
           }}>
@@ -99,7 +100,7 @@
         </button>
       {/if}
 
-      <button type="button" class="-mr-1 flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1" on:click={devicestatsaction}>
+      <button type="button" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={devicestatsaction} aria-label="Toggle device stats">
         {#if devicestatsOpen === true}
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -127,17 +128,18 @@
   </div>
 </div>
 
-<div class="mx-auto max-w-xl">
-  <div class="bg-black grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-black noHL">
+<div class="mx-auto max-w-5xl">
+  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
     <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <div class="w-0 flex-1 flex items-center" on:click={torcstatsaction}>
+      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={torcstatsaction}>
         <p class="ml-3 font-medium  truncate">Torrent Client Status</p>
-      </div>
+      </button>
 
       {#if torcstatsOpen === true}
         <button
           type="button"
-          class="flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0"
+          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0"
+          aria-label="Refresh"
           on:click={() => {
             Send({ command: 'torcstatus', aop: 1 });
           }}>
@@ -147,7 +149,7 @@
         </button>
       {/if}
 
-      <button type="button" class="-mr-1 flex p-2 rounded-md bg-neutral-800 focus:outline-none flex-shrink-0 mx-1" on:click={torcstatsaction}>
+      <button type="button" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={torcstatsaction} aria-label="Toggle torrent client status">
         {#if torcstatsOpen === true}
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -160,7 +162,7 @@
       </button>
     </div>
 
-    <div class="flex flex-col overflow-x-auto bg-neutral-800 rounded-md">
+    <div class="flex flex-col overflow-x-auto bg-slate-900 rounded-md">
       {#if torcstatsOpen === true}
         <pre class="whitespace-pre mb-2 p-2">{$torcstatus} </pre>
       {/if}

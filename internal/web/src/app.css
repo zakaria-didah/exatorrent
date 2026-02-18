@@ -1,10 +1,27 @@
 @import "tailwindcss";
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    @apply bg-neutral-900;
+    @apply bg-slate-950 antialiased;
 }
 
 .noHL {
     -webkit-tap-highlight-color: transparent;
 }
 
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+::-webkit-scrollbar-track {
+    @apply bg-slate-950;
+}
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+}

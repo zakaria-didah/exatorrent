@@ -1,16 +1,16 @@
 {
   "name": "exatorrent",
   "private": true,
-  "homepage": "https://github.com/varbhat/exatorrent#readme",
+  "homepage": "https://github.com/zakaria-didah/exatorrent#readme",
   "bugs": {
-    "url": "https://github.com/varbhat/exatorrent/issues"
+    "url": "https://github.com/zakaria-didah/exatorrent/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/varbhat/exatorrent.git"
+    "url": "git+https://github.com/zakaria-didah/exatorrent.git"
   },
   "license": "GPL-3.0-or-later",
-  "author": "varbhat",
+  "author": "zakaria-didah",
   "type": "module",
   "scripts": {
     "build": "vite build",

@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -27,7 +28,7 @@ func (h *Hub) Add(Uc *UserConn) {
 	h.Conns[Uc.Username] = Uc
 	h.Unlock()
 
-	Info.Printf("User %s (%s) Connected\n", Uc.Username, Uc.Conn.RemoteAddr().String())
+	slog.Info("user connected", "user", Uc.Username, "remote", Uc.Conn.RemoteAddr().String())
 }
 
 func (h *Hub) SendMsg(User string, Type string, State string, Resp string) {
@@ -58,7 +59,7 @@ func (h *Hub) Remove(Uc *UserConn) {
 	if ok && conn != nil {
 		if conn.Time == Uc.Time {
 			delete(h.Conns, Uc.Username)
-			Info.Printf("User %s (%s) Disconnected\n", Uc.Username, Uc.Conn.RemoteAddr().String())
+			slog.Info("user disconnected", "user", Uc.Username, "remote", Uc.Conn.RemoteAddr().String())
 		}
 	}
 }

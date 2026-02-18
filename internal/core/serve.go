@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -120,6 +121,7 @@ func StreamFile(w http.ResponseWriter, r *http.Request) {
 	filereader := f.NewReader()
 	defer filereader.Close()
 	filereader.SetReadahead(48 << 20)
+	slog.Debug("streaming file", "infohash", parts[3], "path", reqpath, "remote", r.RemoteAddr)
 	http.ServeContent(w, r, reqpath, time.Time{}, filereader)
 }
 

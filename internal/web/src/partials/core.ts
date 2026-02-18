@@ -11,6 +11,7 @@ export interface DlObject {
   length?: number;
   state: string;
   seeding?: boolean;
+  category?: string;
 }
 
 interface RespObject {
@@ -161,6 +162,16 @@ export const nooftrackersintrackerdb: Writable<number> = writable(0);
 
 export const hasMachinfo: Writable<boolean> = writable(false);
 
+export interface SignupRequestItem {
+  id: number;
+  username: string;
+  message: string;
+  status: string;
+  created_at: string;
+}
+
+export const signuprequests: Writable<SignupRequestItem[]> = writable([] as SignupRequestItem[]);
+
 export const terrormsg: Writable<{ has: boolean; msg: string }> = writable({ has: true, msg: '' });
 export const versionstr: Writable<string> = writable('');
 export const versionchecked: Writable<boolean> = writable(false);
@@ -308,7 +319,8 @@ export let SocketHandler = (event: MessageEvent) => {
           bytesmissing: msg.data?.bytesmissing,
           length: msg.data?.length,
           state: msg.data?.state,
-          seeding: msg.data?.seeding
+          seeding: msg.data?.seeding,
+          category: msg.data?.category
         } as DlObject);
       } else {
         terrormsg.set({ has: true, msg: 'No Torrent Info' });
@@ -471,6 +483,14 @@ export let SocketHandler = (event: MessageEvent) => {
         nooftrackersintrackerdb.set(msg.data as number);
       } else {
         nooftrackersintrackerdb.set(0);
+      }
+      break;
+    case 'signuprequests':
+      console.log(msg);
+      if (!(msg.data == null)) {
+        signuprequests.set(msg.data as SignupRequestItem[]);
+      } else {
+        signuprequests.set([]);
       }
       break;
   }

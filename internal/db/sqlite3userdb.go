@@ -17,7 +17,7 @@ import (
 
 type Sqlite3UserDb struct {
 	Db *sqlite.Conn
-	mu sync.Mutex
+	Mu sync.Mutex
 }
 
 func (db *Sqlite3UserDb) Open(fp string) {
@@ -35,8 +35,8 @@ func (db *Sqlite3UserDb) Open(fp string) {
 }
 
 func (db *Sqlite3UserDb) Close() {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err := db.Db.Close()
 	if err != nil {
 		DbL.Fatalln(err)
@@ -56,15 +56,15 @@ func (db *Sqlite3UserDb) Add(Username string, Password string, UserType int) (er
 	if err != nil {
 		return
 	}
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err = sqlitex.Exec(db.Db, `insert into userdb (username,password,token,usertype,createdat) values (?,?,?,?,?);`, nil, Username, string(bytes), uuid.New().String(), UserType, time.Now().Format(time.RFC3339))
 	return
 }
 
 func (db *Sqlite3UserDb) Delete(Username string) (err error) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err = sqlitex.Exec(db.Db, `delete from userdb where username=?;`, nil, Username)
 	return
 }
@@ -77,8 +77,8 @@ func (db *Sqlite3UserDb) UpdatePw(Username string, Password string) (err error) 
 	if err != nil {
 		return
 	}
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err = sqlitex.Exec(db.Db, `update userdb set password=? where username=?;`, nil, string(bytes), Username)
 	return
 }
@@ -97,8 +97,8 @@ func (db *Sqlite3UserDb) ChangeType(Username string, Type string) (err error) {
 	} else {
 		return fmt.Errorf("unknown type")
 	}
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err = sqlitex.Exec(db.Db, `update userdb set usertype=? where username=?;`, nil, ut, Username)
 	return
 }
@@ -107,8 +107,8 @@ func (db *Sqlite3UserDb) GetUsers() (ret []*User) {
 	ret = make([]*User, 0)
 	var terr error
 
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	_ = sqlitex.Exec(
 		db.Db, `select * from userdb;`,
 		func(stmt *sqlite.Stmt) error {
@@ -133,8 +133,8 @@ func (db *Sqlite3UserDb) Validate(Username string, Password string) (ut int, ret
 	var exists bool
 	var serr error
 
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	serr = sqlitex.Exec(
 		db.Db, `select usertype,password from userdb where username=?;`,
 		func(stmt *sqlite.Stmt) error {
@@ -160,8 +160,8 @@ func (db *Sqlite3UserDb) ValidateToken(Token string) (user string, ut int, err e
 		return "", -1, fmt.Errorf("token is empty")
 	}
 	var exists bool
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err = sqlitex.Exec(
 		db.Db, `select usertype,username from userdb where token=?;`,
 		func(stmt *sqlite.Stmt) error {
@@ -184,8 +184,8 @@ func (db *Sqlite3UserDb) ValidateToken(Token string) (user string, ut int, err e
 }
 
 func (db *Sqlite3UserDb) SetToken(Username string, Token string) (err error) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
 	err = sqlitex.Exec(db.Db, `update userdb set token=? where username=?;`, nil, Token, Username)
 	return
 }

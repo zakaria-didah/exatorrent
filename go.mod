@@ -1,4 +1,4 @@
-module github.com/varbhat/exatorrent
+module github.com/zakaria-didah/exatorrent
 
 go 1.24.0
 

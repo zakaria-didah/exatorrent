@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/anacrolix/chansync"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anacrolix/chansync"
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/google/uuid"
@@ -42,14 +43,14 @@ const (
 func SocketAPI(w http.ResponseWriter, r *http.Request) {
 	username, usertype, _, err := authHelper(w, r)
 	if err != nil {
-		Warn.Printf("%s (%s)\n", err, r.RemoteAddr)
+		slog.Warn("websocket auth failed", "error", err, "remote", r.RemoteAddr)
 		return
 	}
 	var admin bool
 	if usertype == 1 {
 		admin = true
 	} else if usertype == -1 {
-		Err.Println("Disabled User denied to Connect", username)
+		slog.Warn("disabled user denied connection", "user", username, "remote", r.RemoteAddr)
 		http.Error(w, "User Disabled", http.StatusUnauthorized)
 		return
 	}
@@ -448,6 +449,52 @@ func wshandler(uc *UserConn, req *ConReq) {
 			Info.Println("TrackerDB Refresh command has been issued by", uc.Username)
 			updatetrackers()
 			_ = uc.SendMsg("resp", "success", "Fetched Trackers from Tracker URLs and Updated TrackerDB")
+			return
+		case "getsignuprequests":
+			pending := Engine.SRDb.GetPending()
+			ret, _ := json.Marshal(DataMsg{Type: "signuprequests", Data: pending})
+			_ = uc.Send(ret)
+			return
+		case "approvesignup":
+			if req.Data1 == "" {
+				_ = uc.SendMsg("resp", "error", "no signup request ID provided")
+				return
+			}
+			id, serr := strconv.ParseInt(req.Data1, 10, 64)
+			if serr != nil {
+				_ = uc.SendMsg("resp", "error", "invalid signup request ID")
+				return
+			}
+			sr, serr := Engine.SRDb.Approve(id)
+			if serr != nil {
+				_ = uc.SendMsg("resp", "error", serr.Error())
+				return
+			}
+			serr = addUserWithHash(sr.Username, sr.Password, 0)
+			if serr != nil {
+				_ = uc.SendMsg("resp", "error", "failed to create user: "+serr.Error())
+				return
+			}
+			_ = uc.SendMsg("resp", "success", "Approved signup request for "+sr.Username)
+			slog.Info("signup request approved", "username", sr.Username, "by", uc.Username)
+			return
+		case "declinesignup":
+			if req.Data1 == "" {
+				_ = uc.SendMsg("resp", "error", "no signup request ID provided")
+				return
+			}
+			id, serr := strconv.ParseInt(req.Data1, 10, 64)
+			if serr != nil {
+				_ = uc.SendMsg("resp", "error", "invalid signup request ID")
+				return
+			}
+			serr = Engine.SRDb.Decline(id)
+			if serr != nil {
+				_ = uc.SendMsg("resp", "error", serr.Error())
+				return
+			}
+			_ = uc.SendMsg("resp", "success", "Declined signup request")
+			slog.Info("signup request declined", "id", id, "by", uc.Username)
 			return
 		case "stoponseedratio":
 			Info.Println("stoponseedratio command has been issued by ", uc.Username)
@@ -1009,6 +1056,59 @@ func wshandler(uc *UserConn, req *ConReq) {
 		if err != nil {
 			return
 		}
+		return
+	case "setcategory":
+		ih, err := MetafromHex(req.Data1)
+		if err != nil {
+			_ = uc.SendMsg("resp", "error", "setcategory: infohash couldn't be parsed "+req.Data1)
+			return
+		}
+		if !uc.IsAdmin {
+			if !Engine.TUDb.HasUser(uc.Username, ih.HexString()) {
+				_ = uc.SendMsg("resp", "error", "torrent doesn't exist")
+				return
+			}
+		}
+		err = Engine.CatDb.Set(ih.HexString(), req.Data2)
+		if err != nil {
+			_ = uc.SendMsg("resp", "error", "failed to set category")
+			return
+		}
+		if req.Data2 == "" {
+			_ = uc.SendMsg("resp", "success", "Category cleared for "+ih.HexString())
+		} else {
+			_ = uc.SendMsg("resp", "success", "Category set to "+req.Data2+" for "+ih.HexString())
+		}
+		return
+	case "setsequential":
+		ih, err := MetafromHex(req.Data1)
+		if err != nil {
+			_ = uc.SendMsg("resp", "error", "setsequential: infohash couldn't be parsed "+req.Data1)
+			return
+		}
+		if !uc.IsAdmin {
+			if !Engine.TUDb.HasUser(uc.Username, ih.HexString()) {
+				_ = uc.SendMsg("resp", "error", "torrent doesn't exist")
+				return
+			}
+		}
+		if req.Data2 == "true" {
+			SequentialMode.Store(ih.HexString(), true)
+			_ = uc.SendMsg("resp", "success", "Sequential download enabled for "+ih.HexString())
+		} else {
+			SequentialMode.Delete(ih.HexString())
+			_ = uc.SendMsg("resp", "success", "Sequential download disabled for "+ih.HexString())
+		}
+		return
+	case "getsequential":
+		ih, err := MetafromHex(req.Data1)
+		if err != nil {
+			_ = uc.SendMsg("resp", "error", "getsequential: infohash couldn't be parsed "+req.Data1)
+			return
+		}
+		_, isSeq := SequentialMode.Load(ih.HexString())
+		ret, _ := json.Marshal(DataMsg{Type: "sequentialstate", Infohash: ih.HexString(), Data: isSeq})
+		_ = uc.Send(ret)
 		return
 	case "version":
 		ret, _ := json.Marshal(DataMsg{Type: "version", Data: Version})

@@ -46,12 +46,12 @@ COPY --link --from=releaser /out /
 # Deploy the application binary into a lean image
 FROM base
 
-LABEL maintainer="varbhat"
+LABEL maintainer="zakaria-didah"
 LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.name="varbhat/exatorrent"
+LABEL org.label-schema.name="zakaria-didah/exatorrent"
 LABEL org.label-schema.description="self-hostable torrent client"
-LABEL org.label-schema.url="https://github.com/varbhat/exatorrent"
-LABEL org.label-schema.vcs-url="https://github.com/varbhat/exatorrent"
+LABEL org.label-schema.url="https://github.com/zakaria-didah/exatorrent"
+LABEL org.label-schema.vcs-url="https://github.com/zakaria-didah/exatorrent"
 
 COPY --link --from=build-go --chown=1000:1000 /exa/build/exatorrent /exatorrent
 

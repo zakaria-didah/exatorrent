@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -23,7 +24,7 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					username, usertype, token, err = rauthHelper(w, r)
 					if err != nil {
-						Warn.Printf("not authorized (%s)\n", r.RemoteAddr)
+						slog.Warn("auth failed", "remote", r.RemoteAddr)
 						http.Error(w, "invalid credentials", http.StatusBadRequest)
 						return
 					}
@@ -33,7 +34,7 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 			} else {
 				username, usertype, token, err = rauthHelper(w, r)
 				if err != nil {
-					Warn.Printf("not authorized (%s)\n", r.RemoteAddr)
+					slog.Warn("auth failed", "remote", r.RemoteAddr)
 					http.Error(w, "invalid credentials", http.StatusBadRequest)
 					return
 				}
@@ -43,7 +44,7 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				username, usertype, token, err = rauthHelper(w, r)
 				if err != nil {
-					Warn.Printf("not authorized (%s)\n", r.RemoteAddr)
+					slog.Warn("auth failed", "remote", r.RemoteAddr)
 					http.Error(w, "invalid credentials", http.StatusBadRequest)
 					return
 				}
@@ -54,7 +55,7 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 	} else {
 		username, usertype, token, err = authHelper(w, r)
 		if err != nil {
-			Warn.Printf("%s (%s)\n", err, r.RemoteAddr)
+			slog.Warn("auth failed", "error", err, "remote", r.RemoteAddr)
 			return
 		}
 	}
@@ -73,7 +74,7 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	Info.Printf("User %s (%s) Authenticated", username, r.RemoteAddr)
+	slog.Info("user authenticated", "user", username, "remote", r.RemoteAddr, "type", usertype)
 
 }
 
@@ -140,6 +141,8 @@ func bauthHelper(w http.ResponseWriter, r *http.Request) (username string, usert
 		Value:    token,
 		Expires:  time.Now().Add(48 * time.Hour),
 		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   Flagconfig.TLSCertPath != "" && Flagconfig.TLSKeyPath != "",
 	})
 	return username, usertype, token, nil
 }
@@ -179,6 +182,8 @@ func rauthHelper(w http.ResponseWriter, r *http.Request) (username string, usert
 		Value:    token,
 		Expires:  time.Now().Add(48 * time.Hour),
 		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   Flagconfig.TLSCertPath != "" && Flagconfig.TLSKeyPath != "",
 	})
 	username = cred.Data1
 	return username, usertype, token, nil

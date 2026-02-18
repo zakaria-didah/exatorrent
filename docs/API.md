@@ -91,4 +91,4 @@ command field of json request represents command that needs to be done. `data1` 
 Some Requests namely `getalltorrents` , `gettorrents` , `gettorrentinfo`  are stream requests. They continuously send data regularly with 5 seconds gap in between. This is useful , say for showing progress of Torrent. There can be only 1 Stream at a time , so if you request new stream , old stream stops. you can also stop stream by sending request `{"command":"stopstream"}`. This stops stream if any do exist.
 
 ## Reference
-Please Read [wshandler](https://github.com/varbhat/exatorrent/blob/main/internal/core/socket.go#L108) to get more details about API
+Please Read [wshandler](https://github.com/zakaria-didah/exatorrent/blob/main/internal/core/socket.go#L108) to get more details about API

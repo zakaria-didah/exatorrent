@@ -1,103 +1,287 @@
 <script lang="ts">
-  // Password box visibility toggle
   import { toast } from 'svelte-sonner';
+  import { Connect } from './core';
+  import { onMount } from 'svelte';
 
+  let mode: 'signin' | 'request' = 'signin';
   let pwvisible = false;
   let pwbox: HTMLInputElement;
+  let reqpwbox: HTMLInputElement;
+  let reqpwvisible = false;
+  let submitting = false;
+
   function toggleinput() {
     pwvisible = !pwvisible;
     pwbox.type = pwvisible ? 'text' : 'password';
   }
-  // Signing in
+
+  function togglereqpw() {
+    reqpwvisible = !reqpwvisible;
+    reqpwbox.type = reqpwvisible ? 'text' : 'password';
+  }
+
   let exausername: string;
   let exapassword: string;
-  import { Connect } from './core';
-  import { onMount } from 'svelte';
+
+  let reqUsername = '';
+  let reqPassword = '';
+  let reqMessage = '';
+
   onMount(() => {
     let un = localStorage.getItem('exausername');
     let pw = localStorage.getItem('exapassword');
     if (un != '' && un != undefined && un != null) {
       if (pw != '' && pw != undefined && pw != null) {
         Connect();
-      } else {
-        return;
       }
-    } else {
-      return;
     }
   });
+
   function signIn() {
-    if (exausername != '' && exausername != undefined && exausername != null) {
-      if (exapassword != '' && exapassword != undefined && exapassword != null) {
-        if (!(exausername.length > 5) || !(exapassword.length > 5)) {
-          toast.error('Invalid Credentials');
-          return;
-        }
-        localStorage.setItem('exausername', exausername);
-        localStorage.setItem('exapassword', exapassword);
-        Connect();
-      } else {
-        toast.error('Password Field Cannot be Empty');
-        return;
-      }
-    } else {
-      toast.error('Username Field Cannot be Empty');
+    if (!exausername || !exapassword) {
+      toast.error('Please fill in all fields');
       return;
     }
-    return;
+    if (exausername.length <= 5 || exapassword.length <= 5) {
+      toast.error('Username and password must be longer than 5 characters');
+      return;
+    }
+    localStorage.setItem('exausername', exausername);
+    localStorage.setItem('exapassword', exapassword);
+    Connect();
+  }
+
+  async function submitRequest() {
+    if (!reqUsername || !reqPassword) {
+      toast.error('Please fill in username and password');
+      return;
+    }
+    if (reqUsername.length <= 5 || reqPassword.length <= 5) {
+      toast.error('Username and password must be longer than 5 characters');
+      return;
+    }
+    submitting = true;
+    try {
+      const res = await fetch('/api/signup-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: reqUsername, password: reqPassword, message: reqMessage })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || 'Request submitted');
+        reqUsername = '';
+        reqPassword = '';
+        reqMessage = '';
+        mode = 'signin';
+      } else {
+        toast.error(data.error || 'Request failed');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      submitting = false;
+    }
   }
 
   let entertosignin = (event: KeyboardEvent) => {
-    if (event.code === 'Enter') {
-      signIn();
-    }
+    if (event.code === 'Enter') signIn();
+  };
+
+  let entertorequest = (event: KeyboardEvent) => {
+    if (event.code === 'Enter') submitRequest();
   };
 </script>
 
-<div class="mt-10  flex items-center justify-center px-4">
-  <div class="max-w-md w-full ">
-    <div>
-      <a href="https://github.com/varbhat/exatorrent" target="_blank" rel="noopener noreferrer">
-        <h2 class=" text-center text-5xl font-extrabold text-blue-200">exatorrent</h2>
-      </a>
-      <p class="mt-2 text-center text-sm text-neutral-300">Sign in to your account</p>
-    </div>
+<style>
+  @keyframes gradientShift {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg,
+      #020617 0%,
+      #0f0a2e 20%,
+      #1a0b3e 35%,
+      #0c0926 50%,
+      #140d30 65%,
+      #0a0720 80%,
+      #020617 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 25s ease infinite;
+  }
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+  .glass-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+</style>
 
-    <div class="mt-2">
-      <label for="username" class="sr-only">Username</label>
+<div class="gradient-bg fixed inset-0 min-h-screen">
+  <div class="noise-overlay fixed inset-0 pointer-events-none"></div>
 
-      <input id="username" name="email" type="text" bind:value={exausername} required class="bg-neutral-800 my-2 appearance-none rounded-md w-full px-3 py-2 border border-neutral-800 placeholder-neutral-500 text-neutral-200 focus:outline-none" placeholder="Username" />
-
-      <label for="password" class="sr-only">Password</label>
-
-      <div class="flex bg-neutral-800 rounded-md my-2 appearance-none border border-neutral-800 w-full">
-        <input
-          id="password"
-          name="password"
-          type="password"
-          bind:value={exapassword}
-          bind:this={pwbox}
-          on:keydown={entertosignin}
-          required
-          class=" bg-neutral-800 appearance-none rounded-md w-full flex-grow px-3 py-2  border-none placeholder-neutral-500 text-neutral-200  focus:outline-none"
-          placeholder="Password" />
-        <button type="button" class="focus:outline-none focus:text-green-500" on:click={toggleinput}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-neutral-400  my-2 mx-2 flex-grow " fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {#if pwvisible}
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-            {:else}
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            {/if}
-          </svg>
-        </button>
+  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-sm w-full">
+      <div class="text-center mb-10">
+        <a href="https://github.com/zakaria-didah/exatorrent" target="_blank" rel="noopener noreferrer" class="inline-block group">
+          <h1 class="text-5xl sm:text-6xl font-bold tracking-tight text-white" style="text-shadow: 0 0 40px rgba(139, 92, 246, 0.3), 0 0 80px rgba(139, 92, 246, 0.1);">
+            exa<span class="text-violet-400">torrent</span>
+          </h1>
+        </a>
+        <p class="mt-3 text-sm text-slate-500 tracking-wide uppercase font-medium">Stream torrent</p>
       </div>
 
-      <button type="button" on:click={signIn} class="w-full my-2  py-2 px-4 border-none text-sm font-medium rounded-md text-white bg-blue-900  outline-none focus:outline-none"> Sign in </button>
+      <div class="glass-card bg-slate-900/30 rounded-2xl border border-slate-700/30 p-7 shadow-2xl shadow-violet-950/20">
+        {#if mode === 'signin'}
+          <div>
+            <h2 class="text-lg font-semibold text-slate-200 mb-5">Sign in</h2>
+
+            <div class="space-y-4">
+              <div>
+                <label for="username" class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Username</label>
+                <input
+                  id="username"
+                  name="email"
+                  type="text"
+                  bind:value={exausername}
+                  required
+                  class="bg-slate-950/50 w-full px-4 py-3 rounded-xl border border-slate-700/40 placeholder-slate-600 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all duration-200"
+                  placeholder="Enter username" />
+              </div>
+
+              <div>
+                <label for="password" class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Password</label>
+                <div class="flex bg-slate-950/50 rounded-xl border border-slate-700/40 overflow-hidden transition-all duration-200 focus-within:ring-1 focus-within:ring-violet-500/40 focus-within:border-violet-500/40">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    bind:value={exapassword}
+                    bind:this={pwbox}
+                    on:keydown={entertosignin}
+                    required
+                    class="bg-transparent w-full flex-grow px-4 py-3 border-none placeholder-slate-600 text-slate-200 text-sm focus:outline-none"
+                    placeholder="Enter password" />
+                  <button type="button" class="flex items-center justify-center w-12 flex-shrink-0 transition-colors duration-150 hover:bg-slate-800/50" on:click={toggleinput}>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      {#if pwvisible}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      {:else}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      {/if}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                on:click={signIn}
+                class="w-full py-3 px-4 text-sm font-semibold rounded-xl text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:ring-offset-2 focus:ring-offset-slate-900 mt-1">
+                Sign in
+              </button>
+            </div>
+
+            <div class="mt-6 pt-5 border-t border-slate-700/30 text-center">
+              <p class="text-sm text-slate-500">Don't have an account?</p>
+              <button
+                type="button"
+                on:click={() => { mode = 'request'; }}
+                class="mt-2 text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors duration-150 bg-transparent border-none cursor-pointer">
+                Request Access
+              </button>
+            </div>
+          </div>
+        {:else}
+          <div>
+            <div class="flex items-center gap-3 mb-5">
+              <button
+                type="button"
+                aria-label="Back to sign in"
+                on:click={() => { mode = 'signin'; }}
+                class="p-1.5 rounded-lg hover:bg-slate-800/50 transition-colors duration-150 bg-transparent border-none cursor-pointer text-slate-400 hover:text-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <h2 class="text-lg font-semibold text-slate-200">Request Access</h2>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label for="req-username" class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Username</label>
+                <input
+                  id="req-username"
+                  type="text"
+                  bind:value={reqUsername}
+                  class="bg-slate-950/50 w-full px-4 py-3 rounded-xl border border-slate-700/40 placeholder-slate-600 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all duration-200"
+                  placeholder="Choose a username" />
+              </div>
+
+              <div>
+                <label for="req-password" class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Password</label>
+                <div class="flex bg-slate-950/50 rounded-xl border border-slate-700/40 overflow-hidden transition-all duration-200 focus-within:ring-1 focus-within:ring-violet-500/40 focus-within:border-violet-500/40">
+                  <input
+                    id="req-password"
+                    type="password"
+                    bind:value={reqPassword}
+                    bind:this={reqpwbox}
+                    on:keydown={entertorequest}
+                    class="bg-transparent w-full flex-grow px-4 py-3 border-none placeholder-slate-600 text-slate-200 text-sm focus:outline-none"
+                    placeholder="Choose a password" />
+                  <button type="button" class="flex items-center justify-center w-12 flex-shrink-0 transition-colors duration-150 hover:bg-slate-800/50" on:click={togglereqpw}>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      {#if reqpwvisible}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      {:else}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      {/if}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label for="req-message" class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Message <span class="text-slate-600 normal-case">(optional)</span></label>
+                <textarea
+                  id="req-message"
+                  bind:value={reqMessage}
+                  rows="3"
+                  maxlength="500"
+                  class="bg-slate-950/50 w-full px-4 py-3 rounded-xl border border-slate-700/40 placeholder-slate-600 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/40 focus:border-violet-500/40 transition-all duration-200 resize-none"
+                  placeholder="Why would you like access?"></textarea>
+              </div>
+
+              <button
+                type="button"
+                disabled={submitting}
+                on:click={submitRequest}
+                class="w-full py-3 px-4 text-sm font-semibold rounded-xl text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed mt-1">
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+
+            <div class="mt-6 pt-5 border-t border-slate-700/30 text-center">
+              <p class="text-sm text-slate-500">Already have an account?</p>
+              <button
+                type="button"
+                on:click={() => { mode = 'signin'; }}
+                class="mt-2 text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors duration-150 bg-transparent border-none cursor-pointer">
+                Sign in
+              </button>
+            </div>
+          </div>
+        {/if}
+      </div>
+
+      <p class="text-center text-slate-700 text-xs mt-8">Powered by exatorrent</p>
     </div>
   </div>
 </div>

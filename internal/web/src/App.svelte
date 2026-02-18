@@ -52,8 +52,8 @@
 {:else if $slocation.pathname === '/about'}
   <About />
 {:else}
-  <div class="mx-auto max-w-3xl">
-    <p class="text-xl text-center text-red-400 font-sans">Not Found</p>
+  <div class="mx-auto max-w-5xl px-3">
+    <p class="text-xl text-center text-slate-400 font-sans mt-8">Not Found</p>
   </div>
 {/if}
 

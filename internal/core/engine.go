@@ -2,13 +2,14 @@ package core
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/anacrolix/chansync"
 
-	"github.com/varbhat/exatorrent/internal/db"
+	"github.com/zakaria-didah/exatorrent/internal/db"
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
@@ -29,6 +30,8 @@ type Eng struct {
 	LsDb      db.LockStateDb
 	UDb       db.UserDb
 	TUDb      db.TorrentUserDb
+	SRDb      db.SignupRequestDb
+	CatDb     db.CategoryDb
 }
 
 // AddfromSpec Adds Torrent by Torrent Spec
@@ -41,7 +44,7 @@ func AddfromSpec(User string, spec *torrent.TorrentSpec, dontstart bool, nofsdb 
 		RemTrackersSpec(spec)
 	}
 
-	Info.Println("Adding Torrent")
+	slog.Info("adding torrent", "infohash", spec.InfoHash.HexString(), "user", User)
 	var trnt *torrent.Torrent
 	var new bool
 	var err error
@@ -50,7 +53,7 @@ func AddfromSpec(User string, spec *torrent.TorrentSpec, dontstart bool, nofsdb 
 	if Engine.Torc != nil {
 		trnt, new, err = Engine.Torc.AddTorrentSpec(spec)
 		if err != nil {
-			Warn.Println("Error adding Torrent Spec", err)
+			slog.Error("failed to add torrent spec", "error", err, "infohash", spec.InfoHash.HexString())
 			MainHub.SendMsgU(User, "nfn", trnt.InfoHash().HexString(), "error", "Error adding Torrent Spec")
 			return
 		}
@@ -204,7 +207,21 @@ func StartTorrent(User string, infohash metainfo.Hash, nofsdb bool) {
 	}
 
 	if trnt.Info() != nil {
-		trnt.DownloadAll()
+		if _, ok := SequentialMode.Load(infohash.HexString()); ok {
+			files := trnt.Files()
+			for i, f := range files {
+				if i == 0 {
+					f.SetPriority(torrent.PiecePriorityNow)
+				} else if i < 3 {
+					f.SetPriority(torrent.PiecePriorityReadahead)
+				} else {
+					f.SetPriority(torrent.PiecePriorityNormal)
+				}
+			}
+			slog.Info("sequential download started", "infohash", infohash.HexString())
+		} else {
+			trnt.DownloadAll()
+		}
 	} else {
 		Warn.Println("Torrent couldn't be Started Because Metainfo is not yet loaded")
 		MainHub.SendMsgU(User, "nfn", infohash.HexString(), "error", "Torrent couldn't be Started Because Metainfo is not yet loaded")
@@ -224,7 +241,7 @@ func StartTorrent(User string, infohash metainfo.Hash, nofsdb bool) {
 		}
 	}
 
-	Info.Println("Torrent ", infohash, " Started by ", User)
+	slog.Info("torrent started", "infohash", infohash.HexString(), "user", User)
 	MainHub.SendMsgU(User, "resp", infohash.HexString(), "success", "Torrent Started")
 
 	if Engine.Econfig.GetListenC() {
@@ -307,7 +324,7 @@ func StopTorrent(User string, infohash metainfo.Hash) {
 		Warn.Println(err)
 	}
 
-	Info.Println("Torrent ", infohash, " Stopped by ", User)
+	slog.Info("torrent stopped", "infohash", infohash.HexString(), "user", User)
 	MainHub.SendMsgU(User, "resp", infohash.HexString(), "success", "Torrent Stopped")
 }
 
@@ -348,7 +365,7 @@ func RemoveTorrent(User string, infohash metainfo.Hash) {
 	if err != nil {
 		Warn.Println(err)
 	}
-	Info.Println("Torrent ", infohash, " Removed by ", User)
+	slog.Info("torrent removed", "infohash", infohash.HexString(), "user", User)
 	MainHub.SendMsgU(User, "resp", infohash.HexString(), "success", "Torrent Removed")
 }
 
@@ -389,7 +406,7 @@ func DeleteTorrent(User string, infohash metainfo.Hash) {
 	if !Engine.Econfig.DRCI() {
 		RemMetaCache(infohash)
 	}
-	Info.Println("Torrent ", infohash, " Deleted by ", User)
+	slog.Info("torrent deleted", "infohash", infohash.HexString(), "user", User)
 	MainHub.SendMsgU(User, "resp", infohash.HexString(), "success", "Torrent Deleted")
 }
 

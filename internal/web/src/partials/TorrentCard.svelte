@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { fileSize, Send, adminmode } from './core';
   import slocation from 'slocation';
 
@@ -11,207 +12,200 @@
   export let seeding: boolean | undefined = false;
   export let isTorrentPage: boolean = false;
   export let locked: boolean = false;
+  export let category: string | undefined = '';
 
   let progpercentage = 0;
+  let posterUrl = '';
+
+  const posterCache: Map<string, string> = (globalThis as any).__posterCache ??= new Map();
 
   let refresh = () => {
     if (isTorrentPage === false) {
-      Send({
-        command: 'listtorrents'
-      });
-    } else if (isTorrentPage === true) {
-      Send({
-        command: 'listtorrentinfo',
-        data1: infohash
-      });
+      Send({ command: 'listtorrents' });
+    } else {
+      Send({ command: 'listtorrentinfo', data1: infohash });
     }
   };
 
   $: progpercentage = (bytescompleted / length) * 100;
+
+  $: stateLabel =
+    state === 'active'
+      ? seeding ? 'Seeding' : 'Downloading'
+      : state === 'inactive'
+        ? 'Stopped'
+        : state === 'loading'
+          ? 'Loading'
+          : state === 'removed'
+            ? 'Removed'
+            : state;
+
+  $: isActive = state === 'active' && !seeding;
+  $: isSeeding = state === 'active' && seeding;
+
+  function hashColor(s: string): string {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    const hue = ((h % 360) + 360) % 360;
+    return `hsl(${hue}, 30%, 15%)`;
+  }
+
+  onMount(async () => {
+    if (!name) return;
+    if (posterCache.has(infohash)) {
+      posterUrl = posterCache.get(infohash)!;
+      return;
+    }
+    try {
+      const resp = await fetch(`/api/poster?name=${encodeURIComponent(name)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        let url = data.poster_url || '';
+        if (!url) {
+          const thumbResp = await fetch(`/api/thumbnail/${infohash}`, { method: 'HEAD' });
+          if (thumbResp.ok) {
+            url = `/api/thumbnail/${infohash}`;
+          }
+        }
+        posterCache.set(infohash, url);
+        posterUrl = url;
+      }
+    } catch {}
+  });
 </script>
 
-<div class="bg-black text-neutral-200 rounded-lg m-3">
-  <div class="px-3 py-5">
-    <div class="flex items-center space-x-3.5 sm:space-x-5 lg:space-x-3.5 xl:space-x-5">
-      <div class="min-w-0 flex-auto space-y-0.5">
-        <div class="text-neutral-400 flex justify-between text-sm font-medium tabular-nums">
-          <div class="truncate">{infohash}</div>
-          <div>
-            {#if state === 'active' || state === 'inactive'}{#if seeding === true}(Seeding)
-              {/if}{fileSize(bytesmissing == null ? 0 : bytesmissing)} R.{/if}
-          </div>
-        </div>
-        {#if state !== 'removed'}
-          <h2
-            class="text-white text-base sm:text-xl lg:text-base xl:text-xl font-semibold break-all"
-            on:click={() => {
-              if (isTorrentPage === false) {
-                slocation.goto(`/torrent/${infohash}`);
-              }
-            }}>
-            {name}
-          </h2>
-        {/if}
-      </div>
-    </div>
-
-    {#if state === 'active' || state === 'inactive'}
-      <div class="space-y-2 mt-1">
-        <div class="bg-zinc-900 rounded-full overflow-hidden">
-          <div class="bg-blue-700  h-1.5" style="width:{progpercentage ? progpercentage : 0}%" />
-        </div>
-        <div class="text-neutral-500 dark:text-neutral-400 flex justify-between text-sm font-medium tabular-nums">
-          <div>{fileSize(bytescompleted)} / {fileSize(length)}</div>
-          <div>
-            {progpercentage?.toLocaleString('en-US', {
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 2
-            })} %
-          </div>
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  <div class="bg-gradient-to-r from-black via-neutral-900 to-black text-white py-2 px-1 grid grid-flow-col grid-cols-3 justify-items-center mt-1 rounded-b-lg">
-    {#if state === 'active' || state === 'loading' || state === 'inactive'}
-      <button
-        type="button"
-        class="grid"
-        on:click={() => {
-          Send({
-            command: 'removetorrent',
-            data1: infohash,
-            ...($adminmode === true && { aop: 1 })
-          });
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-neutral-500 text-sm">Remove</p>
-      </button>
-    {:else if state === 'removed'}
-      <button
-        type="button"
-        class="grid"
-        on:click={() => {
-          Send({
-            command: 'deletetorrent',
-            data1: infohash,
-            ...($adminmode === true && { aop: 1 })
-          });
-          if (isTorrentPage === true) {
-            slocation.goto('/');
-          } else if (isTorrentPage === false) {
-            refresh();
-            Send({ command: 'gettorrents' });
-          }
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-        <p class="text-neutral-500 text-sm">Delete</p>
-      </button>
-    {/if}
-
-    {#if state === 'loading'}
-      <button type="button" class="grid">
-        <svg class="animate-spin h-6 w-6 mx-auto text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-        <p class="text-neutral-500 text-sm">Loading</p>
-      </button>
-    {:else if state === 'active'}
-      <button
-        type="button"
-        class="grid"
-        on:click={() => {
-          Send({
-            command: 'stoptorrent',
-            data1: infohash,
-            ...($adminmode === true && { aop: 1 })
-          });
-          refresh();
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-neutral-500 text-sm">Stop</p>
-      </button>
-    {:else if state === 'removed'}
-      <button
-        type="button"
-        class="grid"
-        on:click={() => {
-          Send({
-            command: 'addinfohash',
-            data1: infohash
-          });
-          refresh();
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-neutral-500 text-sm">Add</p>
-      </button>
-    {:else if state === 'inactive'}
-      <button
-        type="button"
-        class="grid"
-        on:click={() => {
-          Send({
-            command: 'starttorrent',
-            data1: infohash,
-            ...($adminmode === true && { aop: 1 })
-          });
-          refresh();
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-neutral-500 text-sm">Start</p>
-      </button>
-    {/if}
-
+<div class="group bg-slate-900 rounded-lg overflow-hidden transition-all duration-200 hover:bg-slate-800/80 border border-slate-700/40 hover:border-slate-600/50">
+  <div class="flex">
+    <!-- Poster -->
     {#if isTorrentPage === false}
       <button
         type="button"
-        class="grid"
-        on:click={() => {
-          slocation.goto(`/torrent/${infohash}`);
-        }}>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-        </svg>
-        <p class="text-neutral-500 text-sm">View</p>
-      </button>
-    {:else}
-      <button
-        type="button"
-        class="grid"
-        on:click={() => {
-          Send({
-            command: 'toggletorrentlock',
-            data1: infohash
-          });
-          setTimeout(() => {
-            Send({ command: 'istorrentlocked', data1: infohash });
-          }, 1000);
-        }}>
-        {#if locked === true}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-          <p class="text-neutral-500 text-sm">Locked</p>
+        class="relative flex-shrink-0 w-24 sm:w-32 bg-transparent border-none p-0 cursor-pointer"
+        on:click={() => slocation.goto(`/torrent/${infohash}`)}>
+        {#if posterUrl}
+          <img src={posterUrl} alt="" class="w-full h-full object-cover min-h-[8rem] sm:min-h-[10rem]" />
         {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-          </svg>
-          <p class="text-neutral-500 text-sm">Unlocked</p>
+          <div class="w-full h-full min-h-[8rem] sm:min-h-[10rem] flex items-center justify-center" style="background:{hashColor(infohash)}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+          </div>
         {/if}
       </button>
+    {:else}
+      <div class="relative flex-shrink-0 w-24 sm:w-32">
+        {#if posterUrl}
+          <img src={posterUrl} alt="" class="w-full h-full object-cover min-h-[8rem] sm:min-h-[10rem]" />
+        {:else}
+          <div class="w-full h-full min-h-[8rem] sm:min-h-[10rem] flex items-center justify-center" style="background:{hashColor(infohash)}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+          </div>
+        {/if}
+      </div>
     {/if}
+
+    <!-- Info -->
+    <div class="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-1">
+          {#if isTorrentPage === false && state !== 'removed'}
+            <button
+              type="button"
+              class="text-slate-100 text-sm sm:text-base font-medium truncate text-left bg-transparent border-none p-0 cursor-pointer hover:text-violet-400 transition-colors duration-150"
+              on:click={() => slocation.goto(`/torrent/${infohash}`)}>
+              {name || 'Loading...'}
+            </button>
+          {:else}
+            <h2 class="text-slate-100 text-sm sm:text-base font-medium truncate">{name || 'Loading...'}</h2>
+          {/if}
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            {#if category}
+              <span class="text-xs px-1.5 py-0.5 rounded bg-violet-900/40 text-violet-300 border border-violet-700/30">{category}</span>
+            {/if}
+            <span class="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+              <span class="w-1.5 h-1.5 rounded-full {isSeeding ? 'bg-violet-400' : isActive ? 'bg-violet-500' : 'bg-slate-500'}"></span>
+              {stateLabel}
+            </span>
+          </div>
+        </div>
+
+        <p class="text-slate-500 text-xs font-mono truncate mb-2">{infohash}</p>
+
+        {#if state === 'active' || state === 'inactive'}
+          <div class="space-y-1">
+            <div class="bg-slate-800 rounded-full overflow-hidden h-1">
+              <div
+                class="h-full rounded-full transition-all duration-500 ease-out bg-violet-500"
+                style="width:{progpercentage ? progpercentage : 0}%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-slate-500 tabular-nums">
+              <span>{fileSize(bytescompleted)} / {fileSize(length)}</span>
+              <span class="font-medium {progpercentage >= 100 ? 'text-violet-400' : 'text-slate-300'}">{progpercentage?.toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%</span>
+            </div>
+          </div>
+        {/if}
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-1 mt-2 -mb-1">
+        {#if state === 'active' || state === 'loading' || state === 'inactive'}
+          <button type="button" aria-label="Remove" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => { Send({ command: 'removetorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        {:else if state === 'removed'}
+          <button type="button" aria-label="Delete" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => { Send({ command: 'deletetorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); if (isTorrentPage) { slocation.goto('/'); } else { refresh(); Send({ command: 'gettorrents' }); } }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+          </button>
+        {/if}
+
+        {#if state === 'loading'}
+          <div class="p-1.5">
+            <svg class="animate-spin h-4 w-4 text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+        {:else if state === 'active'}
+          <button type="button" aria-label="Stop" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => { Send({ command: 'stoptorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); refresh(); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="6" y="6" width="12" height="12" rx="1" stroke-width="2" /></svg>
+          </button>
+        {:else if state === 'removed'}
+          <button type="button" aria-label="Re-add" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => { Send({ command: 'addinfohash', data1: infohash }); refresh(); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          </button>
+        {:else if state === 'inactive'}
+          <button type="button" aria-label="Start" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => { Send({ command: 'starttorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); refresh(); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          </button>
+        {/if}
+
+        {#if isTorrentPage === false}
+          <button type="button" aria-label="View" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => slocation.goto(`/torrent/${infohash}`)}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        {:else}
+          <button type="button" aria-label={locked ? 'Locked' : 'Unlocked'} class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+            on:click={() => { Send({ command: 'toggletorrentlock', data1: infohash }); setTimeout(() => { Send({ command: 'istorrentlocked', data1: infohash }); }, 1000); }}>
+            {#if locked}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            {:else}
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
+            {/if}
+          </button>
+        {/if}
+
+        {#if state === 'active' || state === 'inactive'}
+          <span class="ml-auto text-xs text-slate-600 tabular-nums hidden sm:inline">{fileSize(bytesmissing == null ? 0 : bytesmissing)} left</span>
+        {/if}
+      </div>
+    </div>
   </div>
 </div>

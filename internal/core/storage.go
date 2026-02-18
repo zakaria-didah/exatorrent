@@ -3,7 +3,7 @@ package core
 import (
 	"path/filepath"
 
-	"github.com/varbhat/exatorrent/internal/db"
+	"github.com/zakaria-didah/exatorrent/internal/db"
 
 	"github.com/anacrolix/torrent"
 )
@@ -28,6 +28,12 @@ func sqliteSetup(tc *torrent.ClientConfig) {
 
 	Engine.TUDb = &db.SqliteTorrentUserDb{}
 	Engine.TUDb.Open(filepath.Join(Dirconfig.DataDir, "torrentuser.db"))
+
+	Engine.SRDb = &db.SqliteSignupRequestDb{}
+	Engine.SRDb.Open(filepath.Join(Dirconfig.DataDir, "signuprequests.db"))
+
+	Engine.CatDb = &db.SqliteCategoryDb{}
+	Engine.CatDb.Open(filepath.Join(Dirconfig.DataDir, "categories.db"))
 
 	Engine.PcDb, err = db.NewSqlitePieceCompletion(Dirconfig.DataDir)
 
