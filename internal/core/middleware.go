@@ -5,21 +5,26 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/time/rate"
 )
 
-// ipLimiters stores per-IP rate limiters for auth endpoints.
+type ipLimiterEntry struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
 type ipLimiters struct {
 	mu       sync.Mutex
-	limiters map[string]*rate.Limiter
+	limiters map[string]*ipLimiterEntry
 	rate     rate.Limit
 	burst    int
 }
 
 func newIPLimiters(r rate.Limit, b int) *ipLimiters {
 	return &ipLimiters{
-		limiters: make(map[string]*rate.Limiter),
+		limiters: make(map[string]*ipLimiterEntry),
 		rate:     r,
 		burst:    b,
 	}
@@ -28,12 +33,28 @@ func newIPLimiters(r rate.Limit, b int) *ipLimiters {
 func (i *ipLimiters) getLimiter(ip string) *rate.Limiter {
 	i.mu.Lock()
 	defer i.mu.Unlock()
-	limiter, exists := i.limiters[ip]
+	entry, exists := i.limiters[ip]
 	if !exists {
-		limiter = rate.NewLimiter(i.rate, i.burst)
-		i.limiters[ip] = limiter
+		entry = &ipLimiterEntry{
+			limiter:  rate.NewLimiter(i.rate, i.burst),
+			lastSeen: time.Now(),
+		}
+		i.limiters[ip] = entry
+	} else {
+		entry.lastSeen = time.Now()
 	}
-	return limiter
+	return entry.limiter
+}
+
+func (i *ipLimiters) sweepOlderThan(maxAge time.Duration) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	cutoff := time.Now().Add(-maxAge)
+	for ip, entry := range i.limiters {
+		if entry.lastSeen.Before(cutoff) {
+			delete(i.limiters, ip)
+		}
+	}
 }
 
 // AuthRateLimiter is the global rate limiter for authentication endpoints.

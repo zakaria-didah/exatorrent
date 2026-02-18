@@ -11,6 +11,7 @@
     diskstats,
     nooftrackersintrackerdb
   } from './core';
+  import CollapsibleSection from './CollapsibleSection.svelte';
   import slocation from 'slocation';
   import { toast } from 'svelte-sonner';
 
@@ -20,7 +21,6 @@
   }
 
   let toggledontstart = (ds: boolean) => {
-    console.log('dontstart changed to', ds);
     ds ? (localStorage.setItem('dontstart', 'true'), ($dontstart = 'true')) : (localStorage.setItem('dontstart', 'false'), ($dontstart = 'false'));
   };
 
@@ -46,7 +46,7 @@
       data1: newpassword
     });
 
-    socket?.readyState === WebSocket.OPEN ? socket?.close() : console.log('socket already closed');
+    if (socket?.readyState === WebSocket.OPEN) socket?.close();
     SignOut();
   };
 
@@ -154,63 +154,18 @@
   </div>
 
   <!-- Disk Usage Card -->
-  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10">
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={diskusageaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); diskusageaction(); } }}>
-      <h3 class="font-medium text-slate-200">Disk Usage</h3>
-      <div class="flex items-center gap-2">
-        {#if diskstatsOpen}
-          <button
-            type="button"
-            aria-label="Refresh"
-            class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-            on:click|stopPropagation={() => { Send({ command: 'diskusage' }); }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {diskstatsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
+  <CollapsibleSection title="Disk Usage" bind:open={diskstatsOpen} onToggle={diskusageaction} onRefresh={() => { Send({ command: 'diskusage' }); }}>
+    <div class="space-y-2 text-sm text-slate-300">
+      <div class="flex justify-between"><span class="text-slate-400">Total</span><span>{fileSize($diskstats?.total)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-400">Free</span><span>{fileSize($diskstats?.free)}</span></div>
+      <div class="flex justify-between"><span class="text-slate-400">Used</span><span>{fileSize($diskstats?.used)} ({$diskstats?.usedPercent}%)</span></div>
     </div>
-
-    {#if diskstatsOpen}
-      <div class="px-4 pb-4 space-y-2 text-sm text-slate-300">
-        <div class="flex justify-between"><span class="text-slate-400">Total</span><span>{fileSize($diskstats?.total)}</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Free</span><span>{fileSize($diskstats?.free)}</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Used</span><span>{fileSize($diskstats?.used)} ({$diskstats?.usedPercent}%)</span></div>
-      </div>
-    {/if}
-  </div>
+  </CollapsibleSection>
 
   {#if $isAdmin === true}
     <!-- Misc Settings Card (Admin) -->
-    <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10">
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={miscsettingsaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); miscsettingsaction(); } }}>
-        <h3 class="font-medium text-slate-200">Misc Settings</h3>
-        <div class="flex items-center gap-2">
-          {#if miscOpen}
-            <button
-              type="button"
-              aria-label="Refresh"
-              class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-              on:click|stopPropagation={() => { Send({ command: 'nooftrackersintrackerdb', aop: 1 }); }}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          {/if}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {miscOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      {#if miscOpen}
-        <div class="px-4 pb-4 space-y-3">
+    <CollapsibleSection title="Misc Settings" bind:open={miscOpen} onToggle={miscsettingsaction} onRefresh={() => { Send({ command: 'nooftrackersintrackerdb', aop: 1 }); }}>
+      <div class="space-y-3">
           <div class="text-sm text-slate-300">
             Total Trackers in TrackerDB: <span class="font-semibold text-slate-100">{$nooftrackersintrackerdb}</span>
           </div>
@@ -244,51 +199,26 @@
               on:click={() => { Send({ command: 'stoponseedratio', data1: srno, aop: 1 }); }}>Stop Torrents</button>
           </div>
         </div>
-      {/if}
-    </div>
+    </CollapsibleSection>
 
     <!-- Engine Settings Card (Admin) -->
-    <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10">
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={enginesettingsOpen} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); enginesettingsOpen(); } }}>
-        <h3 class="font-medium text-slate-200">Engine Settings</h3>
-        <div class="flex items-center gap-2">
-          {#if engsettingsOpen}
-            <button
-              type="button"
-              class="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium transition-colors duration-150"
-              on:click|stopPropagation={() => {
-                if (engsettingsstring?.length === 0) {
-                  toast.error('Empty Config!');
-                } else {
-                  let b64config = window.btoa(engsettingsstring);
-                  Send({ command: 'updateconfig', data1: b64config, aop: 1 });
-                }
-              }}>Update</button>
-            <button
-              type="button"
-              aria-label="Refresh"
-              class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-              on:click|stopPropagation={() => { Send({ command: 'getconfig', aop: 1 }); }}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          {/if}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {engsettingsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      {#if engsettingsOpen && $engconfig != null}
-        <div class="px-4 pb-4">
-          <textarea
-            class="w-full bg-white/5 border border-white/[0.06] text-slate-200 text-sm font-mono resize-y h-96 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            bind:value={engsettingsstring}></textarea>
-        </div>
+    <CollapsibleSection title="Engine Settings" bind:open={engsettingsOpen} onToggle={enginesettingsOpen} onRefresh={() => { Send({ command: 'getconfig', aop: 1 }); }}>
+      <svelte:fragment slot="actions">
+        <button type="button" class="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium transition-colors duration-150" on:click|stopPropagation={() => {
+          if (engsettingsstring?.length === 0) {
+            toast.error('Empty Config!');
+          } else {
+            let b64config = window.btoa(engsettingsstring);
+            Send({ command: 'updateconfig', data1: b64config, aop: 1 });
+          }
+        }}>Update</button>
+      </svelte:fragment>
+      {#if $engconfig != null}
+        <textarea
+          class="w-full bg-white/5 border border-white/[0.06] text-slate-200 text-sm font-mono resize-y h-96 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+          bind:value={engsettingsstring}></textarea>
       {/if}
-    </div>
+    </CollapsibleSection>
   {/if}
 
   <div class="mx-3 mt-2 mb-6">

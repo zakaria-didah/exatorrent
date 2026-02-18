@@ -95,6 +95,11 @@ func (db *SqliteSignupRequestDb) GetPending() []*SignupRequest {
 func (db *SqliteSignupRequestDb) Approve(id int64) (*SignupRequest, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
+
+	if err := sqlitex.Exec(db.Db, `BEGIN IMMEDIATE;`, nil); err != nil {
+		return nil, fmt.Errorf("begin transaction: %w", err)
+	}
+
 	var sr SignupRequest
 	var found bool
 	err := sqlitex.Exec(db.Db, `select id,username,password,message from signuprequests where id=? and status='pending';`,
@@ -107,14 +112,21 @@ func (db *SqliteSignupRequestDb) Approve(id int64) (*SignupRequest, error) {
 			return nil
 		}, id)
 	if err != nil {
+		_ = sqlitex.Exec(db.Db, `ROLLBACK;`, nil)
 		return nil, err
 	}
 	if !found {
+		_ = sqlitex.Exec(db.Db, `ROLLBACK;`, nil)
 		return nil, fmt.Errorf("signup request not found or already processed")
 	}
 	err = sqlitex.Exec(db.Db, `delete from signuprequests where id=?;`, nil, id)
 	if err != nil {
+		_ = sqlitex.Exec(db.Db, `ROLLBACK;`, nil)
 		return nil, err
+	}
+	if err := sqlitex.Exec(db.Db, `COMMIT;`, nil); err != nil {
+		_ = sqlitex.Exec(db.Db, `ROLLBACK;`, nil)
+		return nil, fmt.Errorf("commit: %w", err)
 	}
 	return &sr, nil
 }

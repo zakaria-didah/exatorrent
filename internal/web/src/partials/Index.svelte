@@ -14,7 +14,6 @@
         return;
       }
       if (torrentinput.startsWith('magnet:')) {
-        console.log('Adding Magnet', torrentinput, $dontstart);
         Send({
           command: 'addmagnet',
           data1: torrentinput,
@@ -22,7 +21,6 @@
         });
         torrentinput = '';
       } else {
-        console.log('Adding Infohash', torrentinput, $dontstart);
         Send({
           command: 'addinfohash',
           data1: torrentinput,
@@ -35,7 +33,6 @@
         toast.error('File Invalid');
         return;
       }
-      console.log('Adding Torrent', trntfilestring, $dontstart);
       Send({
         command: 'addtorrent',
         data1: trntfilestring,

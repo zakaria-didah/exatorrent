@@ -34,6 +34,30 @@ type Eng struct {
 	CatDb     db.CategoryDb
 }
 
+// GetUserUsage returns the total declared size (in bytes) of all torrents owned by the user.
+func GetUserUsage(username string) int64 {
+	if Engine.Torc == nil {
+		return 0
+	}
+	var total int64
+	for _, ih := range Engine.TUDb.ListTorrents(username) {
+		if t, ok := Engine.Torc.Torrent(ih); ok && t.Info() != nil {
+			total += t.Length()
+		}
+	}
+	return total
+}
+
+// CheckQuota returns true if the user has enough quota for the given additional bytes.
+// Admins and users with quota=0 (unlimited) always pass.
+func CheckQuota(username string, additionalBytes int64) bool {
+	quota := Engine.UDb.GetQuota(username)
+	if quota <= 0 {
+		return true
+	}
+	return GetUserUsage(username)+additionalBytes <= quota
+}
+
 // AddfromSpec Adds Torrent by Torrent Spec
 func AddfromSpec(User string, spec *torrent.TorrentSpec, dontstart bool, nofsdb bool) {
 	if spec == nil {
@@ -167,6 +191,18 @@ func AddfromSpec(User string, spec *torrent.TorrentSpec, dontstart bool, nofsdb 
 		MainHub.SendMsgU(User, "nfn", ih.HexString(), "warning", "Torrent Task		cancelled = true that was being added was Deleted !")
 	case <-trnt.GotInfo():
 		Info.Println("Torrent ", ih, " is Loaded")
+
+		if User != "" && !CheckQuota(User, trnt.Length()) {
+			slog.Warn("quota exceeded, dropping torrent", "user", User, "infohash", ih.HexString(), "size", trnt.Length())
+			_ = Engine.TUDb.Remove(User, ih)
+			if len(Engine.TUDb.ListUsers(ih)) == 0 {
+				trnt.Drop()
+				_ = Engine.TorDb.Delete(ih)
+			}
+			MainHub.SendMsgU(User, "nfn", ih.HexString(), "error", "Storage quota exceeded — torrent rejected")
+			return
+		}
+
 		MainHub.SendMsgU(User, "nfn", ih.HexString(), "info", "Torrent is Loaded")
 		if !dontstart {
 			go StartTorrent(User, ih, nofsdb)

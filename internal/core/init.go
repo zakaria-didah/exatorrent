@@ -291,5 +291,6 @@ func Initialize() {
 
 	go UpdateTrackers()
 	go TorrentRoutine()
+	StartCleanupRoutine()
 
 }

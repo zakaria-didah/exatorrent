@@ -11,7 +11,6 @@
 
   onMount(() => {
     if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
-      console.log('Attempting to Connect');
       slocation.goto('/');
       Connect();
     }

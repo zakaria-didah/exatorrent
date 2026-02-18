@@ -15,6 +15,11 @@ import (
 
 var TMDBAPIKey string
 
+type posterCacheEntry struct {
+	result    *posterResult
+	cachedAt  time.Time
+}
+
 var posterCache sync.Map
 
 var (
@@ -131,7 +136,8 @@ func PosterHandler(w http.ResponseWriter, r *http.Request) {
 
 	cacheKey := strings.ToLower(title + "|" + year)
 	if cached, ok := posterCache.Load(cacheKey); ok {
-		json.NewEncoder(w).Encode(cached.(*posterResult))
+		entry := cached.(*posterCacheEntry)
+		json.NewEncoder(w).Encode(entry.result)
 		return
 	}
 
@@ -142,7 +148,7 @@ func PosterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posterCache.Store(cacheKey, result)
+	posterCache.Store(cacheKey, &posterCacheEntry{result: result, cachedAt: time.Now()})
 
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	json.NewEncoder(w).Encode(result)

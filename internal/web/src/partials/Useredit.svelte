@@ -3,7 +3,6 @@
   import slocation from 'slocation';
 
   onMount(() => {
-    console.log('on mount');
     oldselected = selected;
     utchangeallowed = true;
   });
@@ -14,11 +13,13 @@
   export let username = '';
   export let timestring = '';
   export let selected: 'user' | 'disabled' | 'admin' = 'disabled';
+  export let quotabytes: number = 0;
 
   let oldselected: 'user' | 'disabled' | 'admin' = 'disabled';
   let usereditmode = false;
   let newpw = '';
   let utchangeallowed = false;
+  let quotaGB = quotabytes > 0 ? +(quotabytes / (1024 * 1024 * 1024)).toFixed(1) : 0;
 
   let updateuser = () => {
     if (newpw?.length > 5) {
@@ -40,6 +41,15 @@
       } else {
         toast.error('Same Usertype Selected');
       }
+    }
+    const newQuotaBytes = quotaGB * 1024 * 1024 * 1024;
+    if (newQuotaBytes !== quotabytes) {
+      Send({
+        command: 'setquota',
+        data1: username,
+        data2: String(quotaGB),
+        aop: 1
+      });
     }
   };
 </script>
@@ -80,7 +90,7 @@
         </button>
       </div>
     </div>
-    <p class="text-xs text-slate-500 mt-0.5">Created at {timestring}</p>
+    <p class="text-xs text-slate-500 mt-0.5">Created at {timestring} · Quota: {quotabytes > 0 ? (quotabytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB' : 'Unlimited'}</p>
   </div>
   {#if usereditmode === true}
     <div class="flex items-center gap-2 mt-2 pt-2 border-t border-white/[0.06]">
@@ -96,6 +106,16 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       </button>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <input
+          type="number"
+          min="0"
+          step="0.5"
+          bind:value={quotaGB}
+          class="bg-white/5 appearance-none rounded-lg w-16 px-2 py-2 border border-white/[0.06] text-slate-200 text-sm text-center focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+          title="Storage quota in GB (0 = unlimited)" />
+        <span class="text-slate-500 text-xs">GB</span>
+      </div>
       <select class="bg-white/5 text-slate-200 text-sm rounded-lg px-2 py-2 border border-white/[0.06] focus:outline-none appearance-none cursor-pointer" bind:value={selected}>
         <option value="user">User</option>
         <option value="disabled">Disabled</option>

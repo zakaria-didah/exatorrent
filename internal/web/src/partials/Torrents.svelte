@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { downloadslist, Send, adminmode, isAdmin, terrormsg } from './core';
+  import { downloadslist, Send, adminmode, isAdmin, terrormsg, quotaInfo, fileSize } from './core';
   import type { DlObject } from './core';
   import TorrentCard from './TorrentCard.svelte';
 
@@ -12,10 +12,10 @@
       Send({ command: 'listalltorrents', aop: 1 });
       Send({ command: 'getalltorrents', aop: 1 });
     }
+    Send({ command: 'getquota' });
   });
 
   onDestroy(() => {
-    console.log('on destroy');
     Send({ command: 'stopstream' });
   });
 
@@ -97,6 +97,21 @@
           <input type="checkbox" class="sr-only peer" bind:checked={$adminmode} />
           <div class="w-9 h-5 bg-slate-700 peer-focus:ring-2 peer-focus:ring-violet-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-600"></div>
         </label>
+      </div>
+    {/if}
+
+    {#if $quotaInfo.quota > 0}
+      {@const pct = Math.min(100, ($quotaInfo.usage / $quotaInfo.quota) * 100)}
+      <div class="bg-white/5 glass rounded-lg mt-4 px-4 py-3 border border-white/10">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-slate-400 text-xs font-medium">Storage</span>
+          <span class="text-slate-400 text-xs tabular-nums">{fileSize($quotaInfo.usage)} / {fileSize($quotaInfo.quota)}</span>
+        </div>
+        <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div
+            class="h-full rounded-full transition-all duration-500 {pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-500' : 'bg-violet-500'}"
+            style="width: {pct}%"></div>
+        </div>
       </div>
     {/if}
 

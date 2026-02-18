@@ -50,6 +50,11 @@ checksum:
 run:
 	cd build && ./exatorrent*
 
+##test: Run all Go tests
+.PHONY: test
+test:
+	env CGO_ENABLED=1 go test $(PACKAGES)
+
 ##docker: Build the Docker image
 .PHONY: docker
 docker:

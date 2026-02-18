@@ -1,8 +1,12 @@
 <script lang="ts">
   import { Send, userconnlist, userlist, isAdmin, signuprequests } from './core';
   import slocation from 'slocation';
+  import CollapsibleSection from './CollapsibleSection.svelte';
   import { onMount } from 'svelte';
+  import { toast } from 'svelte-sonner';
   import Useredit from './Useredit.svelte';
+
+  const validUsernameRe = /^[a-zA-Z0-9_-]+$/;
 
   onMount(() => {
     if ($isAdmin === false) {
@@ -35,6 +39,18 @@
   };
 
   let addUser = () => {
+    if (!newusername || !newpassword) {
+      toast.error('Please fill in username and password');
+      return;
+    }
+    if (newusername.length <= 5 || newpassword.length <= 5) {
+      toast.error('Username and password must be longer than 5 characters');
+      return;
+    }
+    if (!validUsernameRe.test(newusername)) {
+      toast.error('Username must contain only letters, numbers, underscores, and hyphens');
+      return;
+    }
     Send({
       command: 'adduser',
       data1: newusername,
@@ -80,28 +96,9 @@
 
 <div class="mx-auto max-w-5xl px-2 sm:px-0">
   <!-- Signup Requests -->
-  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={signupRequestsaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); signupRequestsaction(); } }}>
-      <h3 class="font-medium text-slate-200">Signup Requests</h3>
-      <div class="flex items-center gap-2">
-        {#if signupRequestsOpen}
-          <button type="button" aria-label="Refresh signup requests" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-            on:click|stopPropagation={() => { Send({ command: 'getsignuprequests', aop: 1 }); }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {signupRequestsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </div>
-
-    {#if signupRequestsOpen}
-      <div class="px-4 pb-4 space-y-2">
-        {#if $signuprequests.length === 0}
+  <CollapsibleSection title="Signup Requests" bind:open={signupRequestsOpen} onToggle={signupRequestsaction} onRefresh={() => { Send({ command: 'getsignuprequests', aop: 1 }); }}>
+    <div class="space-y-2">
+      {#if $signuprequests.length === 0}
           <p class="text-slate-500 text-sm text-center py-4">No pending signup requests</p>
         {:else}
           {#each $signuprequests as req (req.id)}
@@ -138,33 +135,13 @@
             </div>
           {/each}
         {/if}
-      </div>
-    {/if}
-  </div>
+    </div>
+  </CollapsibleSection>
 
   <!-- User Connections -->
-  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={userconnlistaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); userconnlistaction(); } }}>
-      <h3 class="font-medium text-slate-200">User Connections</h3>
-      <div class="flex items-center gap-2">
-        {#if userconnlistOpen}
-          <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-            on:click|stopPropagation={() => { Send({ command: 'listuserconns', aop: 1 }); }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {userconnlistOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </div>
-
-    {#if userconnlistOpen}
-      <div class="px-4 pb-4 space-y-2">
-        {#each $userconnlist as eachuser (eachuser?.username)}
+  <CollapsibleSection title="User Connections" bind:open={userconnlistOpen} onToggle={userconnlistaction} onRefresh={() => { Send({ command: 'listuserconns', aop: 1 }); }}>
+    <div class="space-y-2">
+      {#each $userconnlist as eachuser (eachuser?.username)}
           <div class="text-slate-200 bg-white/5 px-4 py-3 rounded-xl border border-white/[0.06]">
             <div class="flex items-center justify-between gap-2">
               <div class="flex-1 min-w-0">
@@ -186,51 +163,21 @@
             </div>
           </div>
         {/each}
-      </div>
-    {/if}
-  </div>
+    </div>
+  </CollapsibleSection>
 
   <!-- Manage Users -->
-  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={manageUsersaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); manageUsersaction(); } }}>
-      <h3 class="font-medium text-slate-200">Manage Users</h3>
-      <div class="flex items-center gap-2">
-        {#if manageUsersOpen}
-          <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-            on:click|stopPropagation={() => { Send({ command: 'getusers', aop: 1 }); }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {manageUsersOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </div>
-
-    {#if manageUsersOpen}
-      <div class="px-4 pb-4 space-y-2">
-        {#each $userlist as eachuser (eachuser?.Username)}
-          <Useredit username={eachuser?.Username} selected={typenotostring(eachuser?.UserType)} timestring={new Date(eachuser?.CreatedAt)?.toLocaleString()} />
+  <CollapsibleSection title="Manage Users" bind:open={manageUsersOpen} onToggle={manageUsersaction} onRefresh={() => { Send({ command: 'getusers', aop: 1 }); }}>
+    <div class="space-y-2">
+      {#each $userlist as eachuser (eachuser?.Username)}
+          <Useredit username={eachuser?.Username} selected={typenotostring(eachuser?.UserType)} timestring={new Date(eachuser?.CreatedAt)?.toLocaleString()} quotabytes={eachuser?.quotabytes ?? 0} />
         {/each}
-      </div>
-    {/if}
-  </div>
+    </div>
+  </CollapsibleSection>
 
   <!-- Add User -->
-  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={useraddaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); useraddaction(); } }}>
-      <h3 class="font-medium text-slate-200">Add User</h3>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {addUserOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-
-    {#if addUserOpen}
-      <div class="px-4 pb-4 space-y-3">
+  <CollapsibleSection title="Add User" bind:open={addUserOpen} onToggle={useraddaction}>
+    <div class="space-y-3">
         <input id="username" name="email" type="text" bind:value={newusername} required
                class="bg-white/5 appearance-none rounded-xl w-full px-3.5 py-2.5 border border-white/[0.06] placeholder-slate-500 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/40"
                placeholder="Username" />
@@ -268,7 +215,6 @@
                 class="w-full py-2.5 px-4 text-sm font-medium rounded-xl text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-violet-500/50">
           Add User
         </button>
-      </div>
-    {/if}
-  </div>
+    </div>
+  </CollapsibleSection>
 </div>

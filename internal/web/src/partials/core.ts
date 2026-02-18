@@ -90,6 +90,12 @@ interface Userrepr {
   Token: string;
   UserType: number;
   CreatedAt: string;
+  quotabytes: number;
+}
+
+export interface QuotaInfo {
+  quota: number;
+  usage: number;
 }
 
 interface TorcSettings {
@@ -172,13 +178,13 @@ export interface SignupRequestItem {
 
 export const signuprequests: Writable<SignupRequestItem[]> = writable([] as SignupRequestItem[]);
 
+export const quotaInfo: Writable<QuotaInfo> = writable({ quota: 0, usage: 0 });
+
 export const terrormsg: Writable<{ has: boolean; msg: string }> = writable({ has: true, msg: '' });
 export const versionstr: Writable<string> = writable('');
 export const versionchecked: Writable<boolean> = writable(false);
 
 let curobj: Location;
-let un = '';
-let pw = '';
 let firsttimecon = true;
 
 let wonopenfn = () => {
@@ -200,65 +206,46 @@ let werrorfn = () => {
     toast.error('Error Connecting');
     return;
   }
-  try {
-    fetch('/api/auth', {
-      method: 'POST',
-      body: JSON.stringify({ data1: un, data2: pw })
+  fetch('/api/auth', {
+    method: 'POST',
+    credentials: 'same-origin'
+  })
+    .then((res) => {
+      if (res.status >= 200 && res.status <= 299) {
+        return res.json();
+      } else {
+        throw new Error('Session expired');
+      }
     })
-      .then((res) => {
-        if (res.status >= 200 && res.status <= 299) {
-          return res.json();
-        } else {
-          toast.error('Error Authenticating');
-          throw new Error('Error Authenticating');
-        }
-      })
-      .then((res) => {
-        localStorage.setItem('exasession', res?.session);
-        localStorage.setItem('exausertype', res?.usertype);
+    .then((res) => {
+      localStorage.setItem('exausertype', res?.usertype);
 
-        if (!(localStorage.getItem('dontstart') == undefined)) {
-          localStorage.setItem('dontstart', 'false');
-        } else {
-          dontstart.set(localStorage.getItem('dontstart'));
-        }
+      if (localStorage.getItem('dontstart') != null) {
+        dontstart.set(localStorage.getItem('dontstart'));
+      } else {
+        localStorage.setItem('dontstart', 'false');
+      }
 
-        socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/api/socket');
-        socket.onopen = wonopenfn;
-        socket.onmessage = SocketHandler;
-        socket.onclose = wonclosefn;
-        socket.onerror = werrorfn;
-        isSignedIn.set(true);
-      });
-  } catch (err) {
-    console.log(err);
-    SignOut();
-    return;
-  }
+      socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/api/socket');
+      socket.onopen = wonopenfn;
+      socket.onmessage = SocketHandler;
+      socket.onclose = wonclosefn;
+      socket.onerror = werrorfn;
+      isSignedIn.set(true);
+    })
+    .catch(() => {
+      SignOut();
+    });
 };
 
 export let Connect = () => {
-  un = localStorage.getItem('exausername');
-  pw = localStorage.getItem('exapassword');
-
-  if (un != '' && un != undefined && un != null) {
-    if (pw != '' && pw != undefined && pw != null) {
-      console.log('Signing In');
-    } else {
-      slocation.goto('/signin');
-      return;
-    }
-  } else {
+  const un = localStorage.getItem('exausername');
+  if (!un) {
     slocation.goto('/signin');
     return;
   }
 
-  if (!(un.length > 5) || !(pw.length > 5)) {
-    toast.error('Invalid Credentials');
-    return;
-  }
-
-  if (socket != null || socket != undefined) {
+  if (socket != null) {
     socket?.close();
   }
 
@@ -271,9 +258,7 @@ export let Connect = () => {
 };
 
 export let SocketHandler = (event: MessageEvent) => {
-  console.log('On Message:', event.data);
   let msg = JSON.parse(event.data);
-  console.log(msg);
 
   switch (msg.type) {
     case 'resp':
@@ -338,7 +323,6 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'torrentstats':
-      console.log(msg);
       if (!(msg.data == null)) {
         torrentstats.set(msg.data as TorrentStats);
       } else {
@@ -346,7 +330,6 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'fsdirinfo':
-      console.log(msg);
       if (!(msg.data == null)) {
         fsdirinfo.set(msg.data as FsFile[]);
       } else {
@@ -354,7 +337,6 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'torrentfiles':
-      console.log(msg);
       if (!(msg.data == null)) {
         torrentfiles.set(msg.data as TorrentFile[]);
       } else {
@@ -369,7 +351,6 @@ export let SocketHandler = (event: MessageEvent) => {
       downloadLink.click();
       break;
     case 'torrentfileinfo':
-      console.log(msg);
       if (!(msg.data == null)) {
         torrentfileinfo.set(msg.data as TorrentFile);
       } else {
@@ -377,18 +358,17 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'fsfileinfo':
-      console.log(msg);
       if (!(msg.data == null)) {
         fsfileinfo.set(msg.data as FsFile);
       } else {
         fsfileinfo.set({} as FsFile);
       }
       if (get(filepagediscon) === true) {
-        socket?.readyState === WebSocket.OPEN ? socket?.close() : console.log('socket already closed');
+        if (socket?.readyState === WebSocket.OPEN) socket?.close();
       }
       break;
     case 'usersfortorrent':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         usersfortorrent.set(msg.data as string[]);
       } else {
@@ -396,7 +376,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'torrentsforuser':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         torrentsforuser.set(msg.data as string[]);
       } else {
@@ -404,7 +384,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'torcstatus':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         torcstatus.set(msg.data as TorrentStats);
       } else {
@@ -412,7 +392,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'torrentlockstate':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         istrntlocked.set(msg.data === true);
       } else {
@@ -420,7 +400,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'userconn':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         userconnlist.set(msg.data as UserConn[]);
       } else {
@@ -428,7 +408,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'users':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         userlist.set(msg.data as Userrepr[]);
       } else {
@@ -436,7 +416,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'engconf':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         engconfig.set(msg.data as TorcSettings);
       } else {
@@ -444,7 +424,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'machinfo':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         hasMachinfo.set(true);
         machinfo.set(msg.data as DevInfo);
@@ -453,7 +433,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'machstats':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         machstats.set(msg.data as DevStats);
       } else {
@@ -461,7 +441,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'diskusage':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         diskstats.set(msg.data as DiskStats);
       } else {
@@ -469,7 +449,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'version':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         versionchecked.set(true);
         versionstr.set(msg.data as string);
@@ -478,7 +458,7 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'nooftrackersintrackerdb':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         nooftrackersintrackerdb.set(msg.data as number);
       } else {
@@ -486,11 +466,19 @@ export let SocketHandler = (event: MessageEvent) => {
       }
       break;
     case 'signuprequests':
-      console.log(msg);
+
       if (!(msg.data == null)) {
         signuprequests.set(msg.data as SignupRequestItem[]);
       } else {
         signuprequests.set([]);
+      }
+      break;
+    case 'quota':
+
+      if (!(msg.data == null)) {
+        quotaInfo.set(msg.data as QuotaInfo);
+      } else {
+        quotaInfo.set({ quota: 0, usage: 0 });
       }
       break;
   }
@@ -498,23 +486,24 @@ export let SocketHandler = (event: MessageEvent) => {
 
 export let SignOut = () => {
   localStorage.removeItem('exausername');
-  localStorage.removeItem('exapassword');
-  localStorage.removeItem('exasession');
   localStorage.removeItem('exausertype');
   localStorage.removeItem('dontstart');
-  // Remove Cookies
-  document.cookie.split(';').forEach((c) => {
-    document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/;SameSite=Lax;');
-  });
+  fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+  if (socket) {
+    socket.close();
+    socket = null;
+  }
   isDisConnected.set(false);
   slocation.goto('/signin');
 };
 
-export let Send = (value: any) => {
-  console.log('sending ', value);
+export let Send = (value: any): boolean => {
   if (socket?.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify(value));
+    return true;
   }
+  toast.error('Connection lost — action not sent');
+  return false;
 };
 
 export let fileSize = (b: number) => {

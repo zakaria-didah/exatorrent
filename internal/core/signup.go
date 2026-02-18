@@ -5,7 +5,10 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 )
+
+var validUsername = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 
 type signupReq struct {
 	Username string `json:"username"`
@@ -30,6 +33,11 @@ func SignupRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	if len(req.Username) <= 5 || len(req.Password) <= 5 {
 		http.Error(w, `{"error":"username and password must be longer than 5 characters"}`, http.StatusBadRequest)
+		return
+	}
+
+	if !validUsername.MatchString(req.Username) {
+		http.Error(w, `{"error":"username must contain only letters, numbers, underscores, and hyphens"}`, http.StatusBadRequest)
 		return
 	}
 

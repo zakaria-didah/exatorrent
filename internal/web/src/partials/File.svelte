@@ -33,7 +33,7 @@
   <div class="flex justify-between h-16">
     <button
       aria-label="Go back"
-      class="flex-shrink-0 focus:outline-none  bg-slate-900 m-2 px-3 rounded-md"
+      class="flex-shrink-0 focus:outline-none bg-white/5 glass border border-white/10 m-2 px-3 rounded-xl hover:bg-white/10"
       on:click={() => {
         history.length > 2 ? history.back() : slocation.goto('/');
       }}>
@@ -65,30 +65,30 @@
   <p class="text-center text-slate-400 font-sans break-all">{$fsfileinfo?.name}</p>
   <p class="text-center text-slate-400 font-sans truncate">({fileSize($fsfileinfo?.size)})</p>
 
-  <div class="grid grid-flow-col grid-cols-4 bg-slate-900 my-2 appearance-none border border-slate-700/40 w-full rounded-md">
-    <div class="col-span-3 appearance-none  w-full flex-grow px-3 py-2  border-none  text-slate-300  focus:outline-none mx-1">Use Stream API</div>
+  <div class="grid grid-flow-col grid-cols-4 bg-white/5 glass my-2 border border-white/10 w-full rounded-xl">
+    <div class="col-span-3 w-full flex-grow px-3 py-2 border-none text-slate-300 mx-1">Use Stream API</div>
     <div class="flex items-center justify-end w-full my-2 mr-2">
       <label for="dontstarttoggle" class="flex items-center cursor-pointer mx-1">
         <div class="relative">
-          <input type="checkbox" class="rounded text-violet-600 bg-slate-900 form-checkbox mx-1" bind:checked={stream} />
+          <input type="checkbox" class="rounded text-violet-600 bg-white/10 form-checkbox mx-1" bind:checked={stream} />
         </div>
       </label>
     </div>
   </div>
 
   {#if ft === 'video' || ft === 'audio'}
-    <a href="vlc://{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}" target="_blank" rel="noopener noreferrer">
-      <button class="bg-violet-700 hover:bg-violet-600 w-full my-2 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none"> Play in VLC </button>
+    <a href="vlc://{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}" target="_blank" rel="noopener noreferrer">
+      <button class="bg-violet-700 hover:bg-violet-600 w-full my-2 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-xl text-white focus:outline-none"> Play in VLC </button>
     </a>
 
-    <a href="intent://{location.host}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}#Intent;type=video/any;package=is.xyz.mpv;scheme={location.protocol.slice(0, -1)};end;" target="_blank" rel="noopener noreferrer">
-      <button class="flex md:hidden  bg-slate-800 hover:bg-slate-700 w-full my-2 justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none"> Play in MPV </button>
+    <a href="intent://{location.host}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}#Intent;type=video/any;package=is.xyz.mpv;scheme={location.protocol.slice(0, -1)};end;" target="_blank" rel="noopener noreferrer">
+      <button class="flex md:hidden bg-white/5 glass border border-white/10 hover:bg-white/10 w-full my-2 justify-center py-2 px-4 text-sm font-medium rounded-xl text-white focus:outline-none"> Play in MPV </button>
     </a>
   {/if}
 
-  <input type="text" class="bg-slate-800 rounded-md  w-full my-2 py-2 px-4 text-sm text-slate-300 truncate" disabled value="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}" />
+  <input type="text" class="bg-white/5 glass border border-white/10 rounded-xl w-full my-2 py-2 px-4 text-sm text-slate-300 truncate" disabled value="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}" />
 
-  <a href="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}" target="_blank" rel="noopener noreferrer" download>
-    <button type="button" class="w-full my-3 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-500 focus:outline-none"> Download </button>
+  <a href="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}" target="_blank" rel="noopener noreferrer" download>
+    <button type="button" class="w-full my-3 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-violet-600 hover:bg-violet-500 focus:outline-none"> Download </button>
   </a>
 </div>

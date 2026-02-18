@@ -80,6 +80,8 @@ type UserDb interface {
 	ValidateToken(string) (string, int, error)
 	SetToken(string, string) error
 	CheckUserExists(string) bool
+	GetQuota(string) int64
+	SetQuota(string, int64) error
 }
 
 type TorrentUserDb interface {
@@ -109,9 +111,10 @@ type Torrent struct {
 }
 
 type User struct {
-	Username  string
-	Password  string `json:"-"`
-	Token     string
-	UserType  int // 0 for User,1 for Admin,-1 for Disabled
-	CreatedAt time.Time
+	Username   string
+	Password   string `json:"-"`
+	Token      string
+	UserType   int // 0 for User,1 for Admin,-1 for Disabled
+	CreatedAt  time.Time
+	QuotaBytes int64 `json:"quotabytes"` // 0 = unlimited
 }

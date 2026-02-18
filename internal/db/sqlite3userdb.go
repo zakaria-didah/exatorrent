@@ -20,6 +20,8 @@ type Sqlite3UserDb struct {
 	Mu sync.Mutex
 }
 
+const defaultQuotaBytes int64 = 5 * 1024 * 1024 * 1024 // 5 GB
+
 func (db *Sqlite3UserDb) Open(fp string) {
 	var err error
 	db.Db, err = sqlite.OpenConn(fp, 0)
@@ -28,10 +30,12 @@ func (db *Sqlite3UserDb) Open(fp string) {
 	}
 
 	err = sqlitex.ExecScript(db.Db, `create table if not exists userdb (username text unique,password text,token text unique,usertype integer,createdat text);`)
-
 	if err != nil {
 		DbL.Fatalln(err)
 	}
+
+	// Migrate: add quota_bytes column for existing databases
+	_ = sqlitex.ExecScript(db.Db, `ALTER TABLE userdb ADD COLUMN quota_bytes INTEGER DEFAULT 5368709120;`)
 }
 
 func (db *Sqlite3UserDb) Close() {
@@ -56,9 +60,13 @@ func (db *Sqlite3UserDb) Add(Username string, Password string, UserType int) (er
 	if err != nil {
 		return
 	}
+	quota := defaultQuotaBytes
+	if UserType == 1 { // admin gets unlimited
+		quota = 0
+	}
 	db.Mu.Lock()
 	defer db.Mu.Unlock()
-	err = sqlitex.Exec(db.Db, `insert into userdb (username,password,token,usertype,createdat) values (?,?,?,?,?);`, nil, Username, string(bytes), uuid.New().String(), UserType, time.Now().Format(time.RFC3339))
+	err = sqlitex.Exec(db.Db, `insert into userdb (username,password,token,usertype,createdat,quota_bytes) values (?,?,?,?,?,?);`, nil, Username, string(bytes), uuid.New().String(), UserType, time.Now().Format(time.RFC3339), quota)
 	return
 }
 
@@ -110,7 +118,7 @@ func (db *Sqlite3UserDb) GetUsers() (ret []*User) {
 	db.Mu.Lock()
 	defer db.Mu.Unlock()
 	_ = sqlitex.Exec(
-		db.Db, `select * from userdb;`,
+		db.Db, `select username,password,token,usertype,createdat,quota_bytes from userdb;`,
 		func(stmt *sqlite.Stmt) error {
 			var user User
 			user.Username = stmt.GetText("username")
@@ -122,6 +130,7 @@ func (db *Sqlite3UserDb) GetUsers() (ret []*User) {
 				DbL.Println(terr)
 				return terr
 			}
+			user.QuotaBytes = stmt.GetInt64("quota_bytes")
 			ret = append(ret, &user)
 			return nil
 		})
@@ -187,6 +196,26 @@ func (db *Sqlite3UserDb) SetToken(Username string, Token string) (err error) {
 	db.Mu.Lock()
 	defer db.Mu.Unlock()
 	err = sqlitex.Exec(db.Db, `update userdb set token=? where username=?;`, nil, Token, Username)
+	return
+}
+
+func (db *Sqlite3UserDb) GetQuota(username string) int64 {
+	var quota int64
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
+	_ = sqlitex.Exec(
+		db.Db, `select quota_bytes from userdb where username=?;`,
+		func(stmt *sqlite.Stmt) error {
+			quota = stmt.GetInt64("quota_bytes")
+			return nil
+		}, username)
+	return quota
+}
+
+func (db *Sqlite3UserDb) SetQuota(username string, quotaBytes int64) (err error) {
+	db.Mu.Lock()
+	defer db.Mu.Unlock()
+	err = sqlitex.Exec(db.Db, `update userdb set quota_bytes=? where username=?;`, nil, quotaBytes, username)
 	return
 }
 

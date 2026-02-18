@@ -27,17 +27,17 @@
   let reqPassword = '';
   let reqMessage = '';
 
+  let signingIn = false;
+  const validUsernameRe = /^[a-zA-Z0-9_-]+$/;
+
   onMount(() => {
-    let un = localStorage.getItem('exausername');
-    let pw = localStorage.getItem('exapassword');
-    if (un != '' && un != undefined && un != null) {
-      if (pw != '' && pw != undefined && pw != null) {
-        Connect();
-      }
+    const un = localStorage.getItem('exausername');
+    if (un) {
+      Connect();
     }
   });
 
-  function signIn() {
+  async function signIn() {
     if (!exausername || !exapassword) {
       toast.error('Please fill in all fields');
       return;
@@ -46,9 +46,29 @@
       toast.error('Username and password must be longer than 5 characters');
       return;
     }
-    localStorage.setItem('exausername', exausername);
-    localStorage.setItem('exapassword', exapassword);
-    Connect();
+    if (!validUsernameRe.test(exausername)) {
+      toast.error('Username must contain only letters, numbers, underscores, and hyphens');
+      return;
+    }
+    signingIn = true;
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        body: JSON.stringify({ data1: exausername, data2: exapassword })
+      });
+      if (res.status < 200 || res.status > 299) {
+        toast.error('Invalid credentials');
+        return;
+      }
+      const data = await res.json();
+      localStorage.setItem('exausername', exausername);
+      localStorage.setItem('exausertype', data?.usertype);
+      Connect();
+    } catch {
+      toast.error('Network error');
+    } finally {
+      signingIn = false;
+    }
   }
 
   async function submitRequest() {
@@ -58,6 +78,10 @@
     }
     if (reqUsername.length <= 5 || reqPassword.length <= 5) {
       toast.error('Username and password must be longer than 5 characters');
+      return;
+    }
+    if (!validUsernameRe.test(reqUsername)) {
+      toast.error('Username must contain only letters, numbers, underscores, and hyphens');
       return;
     }
     submitting = true;
@@ -150,9 +174,10 @@
 
               <button
                 type="button"
+                disabled={signingIn}
                 on:click={signIn}
-                class="w-full py-3 px-4 text-sm font-semibold rounded-xl text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:ring-offset-2 focus:ring-offset-slate-900 mt-1">
-                Sign in
+                class="w-full py-3 px-4 text-sm font-semibold rounded-xl text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed mt-1">
+                {signingIn ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
 

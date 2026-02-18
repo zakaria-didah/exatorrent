@@ -3,6 +3,7 @@
   import { Send, adminmode, torrentstats, isAdmin, usersfortorrent, torctime, torrentinfo, fileSize, fsdirinfo, torrentfiles, fileviewpath, fileviewinfohash, istrntlocked } from './core';
   import slocation from 'slocation';
   import TorrentCard from './TorrentCard.svelte';
+  import CollapsibleSection from './CollapsibleSection.svelte';
   import type { DlObject } from './core';
   import ProgStat from './ProgStat.svelte';
   import { toast } from 'svelte-sonner';
@@ -182,97 +183,58 @@
 
   <!-- File Progress -->
   {#if $torrentinfo?.state === 'active' || $torrentinfo?.state === 'inactive'}
-    <div class="bg-white/5 border border-white/10 glass rounded-xl m-3 overflow-hidden noHL">
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={fileProgressaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileProgressaction(); } }}>
-        <h3 class="font-medium text-slate-200">File Progress</h3>
-        <div class="flex items-center gap-2">
-          {#if fileProgressOpen}
-            <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-              on:click|stopPropagation={() => { Send({ command: 'gettorrentfiles', data1: infohash }); }}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          {/if}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {fileProgressOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
+    <CollapsibleSection title="File Progress" bind:open={fileProgressOpen} onToggle={fileProgressaction} onRefresh={() => { Send({ command: 'gettorrentfiles', data1: infohash }); }}>
+      <div class="space-y-2">
+        {#each $torrentfiles as file (file.path)}
+          <div class="text-slate-200 bg-white/5 px-3 py-3 rounded-xl border border-white/[0.06]">
+            <div class="flex items-center justify-between gap-2 py-1">
+              <button
+                class="flex-1 min-w-0 text-left"
+                on:click={() => {
+                  fileviewpath.set(file?.path);
+                  fileviewinfohash.set(infohash);
+                  slocation.goto('/file');
+                }}>
+                <p class="font-medium text-sm truncate hover:text-violet-400 transition-colors duration-150">{file?.displaypath}</p>
+              </button>
 
-      {#if fileProgressOpen}
-        <div class="px-4 pb-4 space-y-2">
-          {#each $torrentfiles as file (file.path)}
-            <div class="text-slate-200 bg-white/5 px-3 py-3 rounded-xl border border-white/[0.06]">
-              <div class="flex items-center justify-between gap-2 py-1">
+              {#if file?.priority === 1}
                 <button
-                  class="flex-1 min-w-0 text-left"
+                  aria-label="Stop file"
+                  class="p-2 rounded-lg bg-white/5 hover:bg-white/10 flex-shrink-0 transition-colors duration-150"
                   on:click={() => {
-                    fileviewpath.set(file?.path);
-                    fileviewinfohash.set(infohash);
-                    slocation.goto('/file');
+                    Send({ command: 'stopfile', data1: infohash, data2: file?.path, ...($adminmode === true && { aop: 1 }) });
+                    setTimeout(() => { Send({ command: 'gettorrentfiles', data1: infohash }); }, 1000);
                   }}>
-                  <p class="font-medium text-sm truncate hover:text-violet-400 transition-colors duration-150">{file?.displaypath}</p>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </button>
-
-                {#if file?.priority === 1}
-                  <button
-                    aria-label="Stop file"
-                    class="p-2 rounded-lg bg-white/5 hover:bg-white/10 flex-shrink-0 transition-colors duration-150"
-                    on:click={() => {
-                      Send({ command: 'stopfile', data1: infohash, data2: file?.path, ...($adminmode === true && { aop: 1 }) });
-                      setTimeout(() => { Send({ command: 'gettorrentfiles', data1: infohash }); }, 1000);
-                    }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
-                {:else if file?.priority === 0}
-                  <button
-                    aria-label="Start file"
-                    class="p-2 rounded-lg bg-white/5 hover:bg-white/10 flex-shrink-0 transition-colors duration-150"
-                    on:click={() => {
-                      Send({ command: 'startfile', data1: infohash, data2: file?.path, ...($adminmode === true && { aop: 1 }) });
-                      setTimeout(() => { Send({ command: 'gettorrentfiles', data1: infohash }); }, 1000);
-                    }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
-                {/if}
-              </div>
-              <ProgStat bytescompleted={file?.bytescompleted} length={file?.length} offset={file?.offset} />
+              {:else if file?.priority === 0}
+                <button
+                  aria-label="Start file"
+                  class="p-2 rounded-lg bg-white/5 hover:bg-white/10 flex-shrink-0 transition-colors duration-150"
+                  on:click={() => {
+                    Send({ command: 'startfile', data1: infohash, data2: file?.path, ...($adminmode === true && { aop: 1 }) });
+                    setTimeout(() => { Send({ command: 'gettorrentfiles', data1: infohash }); }, 1000);
+                  }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              {/if}
             </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
+            <ProgStat bytescompleted={file?.bytescompleted} length={file?.length} offset={file?.offset} />
+          </div>
+        {/each}
+      </div>
+    </CollapsibleSection>
   {/if}
 
   <!-- Browse Files -->
-  <div class="bg-white/5 border border-white/10 glass rounded-xl m-3 overflow-hidden noHL">
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={browseFilesaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); browseFilesaction(); } }}>
-      <h3 class="font-medium text-slate-200">Browse Files</h3>
-      <div class="flex items-center gap-2">
-        {#if browseFilesOpen}
-          <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-            on:click|stopPropagation={() => { Send({ command: 'getfsdirinfo', data1: infohash }); }}>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        {/if}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {browseFilesOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </div>
-
-    {#if browseFilesOpen}
-      <div class="px-4 pb-4 space-y-2">
+  <CollapsibleSection title="Browse Files" bind:open={browseFilesOpen} onToggle={browseFilesaction} onRefresh={() => { Send({ command: 'getfsdirinfo', data1: infohash }); }}>
+      <div class="space-y-2">
         {#each $fsdirinfo as file (file.path)}
           <div class="text-slate-200 bg-white/5 rounded-xl border border-white/[0.06] px-3 py-3">
             <div class="flex flex-col justify-between flex-wrap py-1">
@@ -336,32 +298,12 @@
           </div>
         {/each}
       </div>
-    {/if}
-  </div>
+  </CollapsibleSection>
 
   <!-- Details (merged Stats + Misc) -->
   {#if $torrentinfo?.state === 'active' || $torrentinfo?.state === 'inactive' || $torrentinfo?.state === 'loading'}
-    <div class="bg-white/5 border border-white/10 glass rounded-xl m-3 overflow-hidden noHL">
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={detailsaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); detailsaction(); } }}>
-        <h3 class="font-medium text-slate-200">Details</h3>
-        <div class="flex items-center gap-2">
-          {#if detailsOpen}
-            <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-              on:click|stopPropagation={() => { Send({ command: 'gettorrentstats', data1: infohash }); Send({ command: 'gettorrentinfostat', data1: infohash }); }}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          {/if}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {detailsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      {#if detailsOpen}
-        <div class="px-4 pb-4 space-y-3">
+    <CollapsibleSection title="Details" bind:open={detailsOpen} onToggle={detailsaction} onRefresh={() => { Send({ command: 'gettorrentstats', data1: infohash }); Send({ command: 'gettorrentinfostat', data1: infohash }); }}>
+        <div class="space-y-3">
           <!-- Timestamps -->
           <div class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500">
             <span>Added {$torctime.addedat}</span>
@@ -434,61 +376,40 @@
             </div>
           {/if}
         </div>
-      {/if}
-    </div>
+    </CollapsibleSection>
   {/if}
 
   <!-- Owners (admin-only) -->
   {#if $isAdmin === true}
-    <div class="bg-white/5 border border-white/10 glass rounded-xl m-3 overflow-hidden noHL">
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={uwottaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); uwottaction(); } }}>
-        <h3 class="font-medium text-slate-200">Owners</h3>
-        <div class="flex items-center gap-2">
-          {#if trntUsersOpen}
-            <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
-              on:click|stopPropagation={() => { Send({ command: 'listusersfortorrent', data1: infohash, aop: 1 }); }}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          {/if}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {trntUsersOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      {#if trntUsersOpen}
-        <div class="px-4 pb-4 space-y-2">
-          {#each $usersfortorrent as eachuser (eachuser)}
-            <div class="text-slate-200 bg-white/5 rounded-xl border border-white/[0.06] px-3 py-3">
-              <div class="flex items-center justify-between flex-wrap py-1">
-                <div class="w-0 flex-1 flex">
-                  <p class="font-medium break-all">{eachuser}</p>
-                </div>
-
-                <button
-                  type="button"
-                  aria-label="Remove user"
-                  class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150 flex-shrink-0"
-                  on:click={() => {
-                    Send({
-                      command: 'abandontorrent',
-                      data1: infohash,
-                      data2: eachuser,
-                      aop: 1
-                    });
-                  }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+    <CollapsibleSection title="Owners" bind:open={trntUsersOpen} onToggle={uwottaction} onRefresh={() => { Send({ command: 'listusersfortorrent', data1: infohash, aop: 1 }); }}>
+      <div class="space-y-2">
+        {#each $usersfortorrent as eachuser (eachuser)}
+          <div class="text-slate-200 bg-white/5 rounded-xl border border-white/[0.06] px-3 py-3">
+            <div class="flex items-center justify-between flex-wrap py-1">
+              <div class="w-0 flex-1 flex">
+                <p class="font-medium break-all">{eachuser}</p>
               </div>
+
+              <button
+                type="button"
+                aria-label="Remove user"
+                class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150 flex-shrink-0"
+                on:click={() => {
+                  Send({
+                    command: 'abandontorrent',
+                    data1: infohash,
+                    data2: eachuser,
+                    aop: 1
+                  });
+                }}>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
+          </div>
+        {/each}
+      </div>
+    </CollapsibleSection>
   {/if}
 </div>

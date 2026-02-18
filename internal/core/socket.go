@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -131,6 +132,10 @@ func wshandler(uc *UserConn, req *ConReq) {
 		case "adduser":
 			if !(len(req.Data1) > 5 || len(req.Data2) > 5) {
 				_ = uc.SendMsg("resp", "error", "length of username and password must be more than 5")
+				return
+			}
+			if !validUsername.MatchString(req.Data1) {
+				_ = uc.SendMsg("resp", "error", "username must contain only letters, numbers, underscores, and hyphens")
 				return
 			}
 			var err error
@@ -496,6 +501,25 @@ func wshandler(uc *UserConn, req *ConReq) {
 			_ = uc.SendMsg("resp", "success", "Declined signup request")
 			slog.Info("signup request declined", "id", id, "by", uc.Username)
 			return
+		case "setquota":
+			if req.Data1 == "" {
+				_ = uc.SendMsg("resp", "error", "username is required")
+				return
+			}
+			quotaGB, serr := strconv.ParseFloat(req.Data2, 64)
+			if serr != nil || quotaGB < 0 {
+				_ = uc.SendMsg("resp", "error", "invalid quota value (use GB, 0 = unlimited)")
+				return
+			}
+			quotaBytes := int64(quotaGB * 1024 * 1024 * 1024)
+			serr = Engine.UDb.SetQuota(req.Data1, quotaBytes)
+			if serr != nil {
+				_ = uc.SendMsg("resp", "error", "failed to set quota: "+serr.Error())
+				return
+			}
+			slog.Info("quota updated", "user", req.Data1, "quota_gb", quotaGB, "by", uc.Username)
+			_ = uc.SendMsg("resp", "success", fmt.Sprintf("Quota for %s set to %.1f GB", req.Data1, quotaGB))
+			return
 		case "stoponseedratio":
 			Info.Println("stoponseedratio command has been issued by ", uc.Username)
 			if req.Data1 == "" {
@@ -518,6 +542,15 @@ func wshandler(uc *UserConn, req *ConReq) {
 	}
 
 	switch req.Command {
+	case "getquota":
+		quota := Engine.UDb.GetQuota(uc.Username)
+		usage := GetUserUsage(uc.Username)
+		ret, _ := json.Marshal(DataMsg{Type: "quota", Data: map[string]int64{
+			"quota": quota,
+			"usage": usage,
+		}})
+		_ = uc.Send(ret)
+		return
 	case "addmagnet":
 		tspec, terr := torrent.TorrentSpecFromMagnetUri(req.Data1)
 		if terr != nil {

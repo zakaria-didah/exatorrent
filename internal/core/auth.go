@@ -17,39 +17,32 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 	var token string
 	var err error
 	if r.Method == http.MethodPost {
-		c, err := r.Cookie("session_token")
+		// Try body credentials first (explicit login takes priority over stale cookie)
+		username, usertype, token, err = rauthHelper(w, r)
 		if err != nil {
-			if val := r.URL.Query().Get("token"); val != "" {
-				username, usertype, err = Engine.UDb.ValidateToken(val)
-				if err != nil {
-					username, usertype, token, err = rauthHelper(w, r)
-					if err != nil {
-						slog.Warn("auth failed", "remote", r.RemoteAddr)
-						http.Error(w, "invalid credentials", http.StatusBadRequest)
-						return
-					}
-				} else {
-					token = val
-				}
-			} else {
-				username, usertype, token, err = rauthHelper(w, r)
-				if err != nil {
-					slog.Warn("auth failed", "remote", r.RemoteAddr)
-					http.Error(w, "invalid credentials", http.StatusBadRequest)
-					return
+			// No body credentials (reconnect flow) -- fall back to cookie
+			c, cerr := r.Cookie("session_token")
+			if cerr == nil {
+				username, usertype, cerr = Engine.UDb.ValidateToken(c.Value)
+				if cerr == nil {
+					token = c.Value
+					err = nil
 				}
 			}
-		} else {
-			username, usertype, err = Engine.UDb.ValidateToken(c.Value)
+			// Still failed -- try token query param
 			if err != nil {
-				username, usertype, token, err = rauthHelper(w, r)
-				if err != nil {
-					slog.Warn("auth failed", "remote", r.RemoteAddr)
-					http.Error(w, "invalid credentials", http.StatusBadRequest)
-					return
+				if val := r.URL.Query().Get("token"); val != "" {
+					username, usertype, cerr = Engine.UDb.ValidateToken(val)
+					if cerr == nil {
+						token = val
+						err = nil
+					}
 				}
-			} else {
-				token = c.Value
+			}
+			if err != nil {
+				slog.Warn("auth failed", "remote", r.RemoteAddr)
+				http.Error(w, "invalid credentials", http.StatusBadRequest)
+				return
 			}
 		}
 	} else {
@@ -75,7 +68,32 @@ func AuthCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slog.Info("user authenticated", "user", username, "remote", r.RemoteAddr, "type", usertype)
+}
 
+// LogoutHandler invalidates the session token server-side and clears the HttpOnly cookie.
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	c, err := r.Cookie("session_token")
+	if err == nil && c.Value != "" {
+		username, _, verr := Engine.UDb.ValidateToken(c.Value)
+		if verr == nil {
+			_ = Engine.UDb.SetToken(username, "")
+			slog.Info("user logged out", "user", username, "remote", r.RemoteAddr)
+		}
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Path:     "/",
+		Value:    "",
+		MaxAge:   -1,
+		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   Flagconfig.TLSCertPath != "" && Flagconfig.TLSKeyPath != "",
+	})
+	w.WriteHeader(http.StatusOK)
 }
 
 func authHelper(w http.ResponseWriter, r *http.Request) (username string, usertype int, token string, err error) {

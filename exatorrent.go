@@ -16,6 +16,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/auth", core.RateLimit(core.CORSMiddleware(http.HandlerFunc(core.AuthCheck))))
+	mux.Handle("/api/auth/logout", core.CORSMiddleware(http.HandlerFunc(core.LogoutHandler)))
 	mux.Handle("/api/socket", core.CORSMiddleware(http.HandlerFunc(core.SocketAPI)))
 	mux.Handle("/api/stream/", core.CORSMiddleware(http.HandlerFunc(core.StreamFile)))
 	mux.Handle("/api/torrent/", core.CORSMiddleware(http.HandlerFunc(core.TorrentServe)))

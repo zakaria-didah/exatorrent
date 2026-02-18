@@ -20,7 +20,7 @@
     {#each $torrentsforuser as trnt (trnt)}
       <button
         type="button"
-        class="bg-slate-900 text-slate-200 px-3 py-5 rounded-lg m-3 noHL w-full text-left"
+        class="bg-white/5 glass border border-white/10 text-slate-200 px-3 py-5 rounded-xl m-3 noHL w-full text-left hover:bg-white/[0.08]"
         on:click={() => {
           if (typeof trnt === 'string' && trnt?.length > 0) {
             slocation.goto(`/torrent/${trnt}`);

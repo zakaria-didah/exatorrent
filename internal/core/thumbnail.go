@@ -1,12 +1,14 @@
 package core
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func ThumbnailHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +45,9 @@ func ThumbnailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract a frame at ~10% using ffmpeg
-	cmd := exec.Command("ffmpeg",
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "ffmpeg",
 		"-ss", "30",
 		"-i", videoFile,
 		"-vframes", "1",
