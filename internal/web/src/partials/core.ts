@@ -186,10 +186,14 @@ export const versionchecked: Writable<boolean> = writable(false);
 
 let curobj: Location;
 let firsttimecon = true;
+let intentionalClose = false;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
 let wonopenfn = () => {
   firsttimecon = false;
+  intentionalClose = false;
   isDisConnected.set(false);
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   localStorage.getItem('exausertype') === 'admin' ? isAdmin.set(true) : isAdmin.set(false);
   curobj = get(slocation);
   if (curobj?.pathname === '/signin') {
@@ -199,6 +203,9 @@ let wonopenfn = () => {
 
 let wonclosefn = () => {
   isDisConnected.set(true);
+  if (!intentionalClose && localStorage.getItem('exausername')) {
+    reconnectTimer = setTimeout(() => { Connect(); }, 3000);
+  }
 };
 
 let werrorfn = () => {
@@ -485,6 +492,8 @@ export let SocketHandler = (event: MessageEvent) => {
 };
 
 export let SignOut = () => {
+  intentionalClose = true;
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   localStorage.removeItem('exausername');
   localStorage.removeItem('exausertype');
   localStorage.removeItem('dontstart');

@@ -114,7 +114,9 @@
 </svelte:head>
 
 <div class="mx-auto max-w-5xl px-2 sm:px-0">
-  <TorrentCard state={$torrentinfo?.state} name={$torrentinfo?.name} infohash={$torrentinfo?.infohash} bytescompleted={$torrentinfo?.bytescompleted} bytesmissing={$torrentinfo?.bytesmissing} length={$torrentinfo?.length} seeding={$torrentinfo?.seeding} locked={$istrntlocked} isTorrentPage={true} category={$torrentinfo?.category} />
+  {#key $torrentinfo?.infohash}
+    <TorrentCard state={$torrentinfo?.state} name={$torrentinfo?.name} infohash={$torrentinfo?.infohash} bytescompleted={$torrentinfo?.bytescompleted} bytesmissing={$torrentinfo?.bytesmissing} length={$torrentinfo?.length} seeding={$torrentinfo?.seeding} locked={$istrntlocked} isTorrentPage={true} category={$torrentinfo?.category} />
+  {/key}
 
   <!-- Quick Actions -->
   <div class="bg-white/5 border border-white/10 glass flex items-center justify-around text-white rounded-xl m-3 py-2 px-2">

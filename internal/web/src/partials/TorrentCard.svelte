@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { fileSize, Send, adminmode } from './core';
   import slocation from 'slocation';
 
@@ -16,6 +15,7 @@
 
   let progpercentage = 0;
   let posterUrl = '';
+  let fetchedFor = '';
 
   const posterCache: Map<string, string> = (globalThis as any).__posterCache ??= new Map();
 
@@ -50,28 +50,35 @@
     return `hsl(${hue}, 30%, 15%)`;
   }
 
-  onMount(async () => {
-    if (!name) return;
-    if (posterCache.has(infohash)) {
-      posterUrl = posterCache.get(infohash)!;
+  async function fetchPoster(n: string, ih: string) {
+    if (!n || !ih || fetchedFor === ih) return;
+    fetchedFor = ih;
+
+    if (posterCache.has(ih)) {
+      posterUrl = posterCache.get(ih)!;
       return;
     }
+
+    posterUrl = '';
     try {
-      const resp = await fetch(`/api/poster?name=${encodeURIComponent(name)}`);
+      const resp = await fetch(`/api/poster?name=${encodeURIComponent(n)}`);
       if (resp.ok) {
         const data = await resp.json();
         let url = data.poster_url || '';
         if (!url) {
-          const thumbResp = await fetch(`/api/thumbnail/${infohash}`, { method: 'HEAD' });
+          const thumbResp = await fetch(`/api/thumbnail/${ih}`, { method: 'HEAD' });
           if (thumbResp.ok) {
-            url = `/api/thumbnail/${infohash}`;
+            url = `/api/thumbnail/${ih}`;
           }
         }
-        posterCache.set(infohash, url);
-        posterUrl = url;
+        posterCache.set(ih, url);
+        if (fetchedFor === ih) posterUrl = url;
       }
     } catch {}
-  });
+  }
+
+  $: if (infohash !== fetchedFor) posterUrl = '';
+  $: fetchPoster(name, infohash);
 </script>
 
 <div class="group bg-white/5 rounded-lg overflow-hidden transition-all duration-200 hover:bg-white/[0.08] border border-white/10 hover:border-white/15 glass">

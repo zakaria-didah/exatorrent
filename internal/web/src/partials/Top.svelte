@@ -1,13 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { socket, Connect, isDisConnected } from './core';
+  import { socket, Connect, SignOut, isDisConnected } from './core';
   import slocation from 'slocation';
-
-  function closeSocket() {
-    if (socket?.readyState === WebSocket.OPEN) {
-      socket.close();
-    }
-  }
 
   onMount(() => {
     if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
@@ -60,12 +54,12 @@
     </button>
 
     <button
-      aria-label="Disconnect"
+      aria-label="Sign out"
       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 glass transition-colors duration-150 hover:bg-white/10 active:bg-white/15 flex-shrink-0"
-      on:click={closeSocket}
-      title="Disconnect">
+      on:click={() => { SignOut(); }}
+      title="Sign out">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
       </svg>
     </button>
   </div>
