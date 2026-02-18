@@ -23,7 +23,7 @@
     {#if $slocation.pathname !== '/'}
       <button
         aria-label="Go back"
-        class="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-900 border border-slate-700/40 transition-colors duration-150 hover:bg-slate-800 active:bg-slate-700 flex-shrink-0"
+        class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 glass transition-colors duration-150 hover:bg-white/10 active:bg-white/15 flex-shrink-0"
         on:click={() => {
           history.length > 2 ? history.back() : slocation.goto('/');
         }}
@@ -35,7 +35,7 @@
     {:else}
       <button
         aria-label="Notifications"
-        class="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-900 border border-slate-700/40 transition-colors duration-150 hover:bg-slate-800 active:bg-slate-700 flex-shrink-0"
+        class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 glass transition-colors duration-150 hover:bg-white/10 active:bg-white/15 flex-shrink-0"
         on:click={() => {
           slocation.goto('/notifications');
         }}
@@ -47,7 +47,7 @@
     {/if}
 
     <button
-      class="flex items-center gap-2 px-4 py-2 rounded-lg noHL transition-colors duration-150 hover:bg-slate-900/50"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg noHL transition-colors duration-150 hover:bg-white/5"
       title="exatorrent"
       on:click={() => {
         if ($slocation.pathname === '/') {
@@ -62,7 +62,7 @@
 
     <button
       aria-label="Disconnect"
-      class="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-900 border border-slate-700/40 transition-colors duration-150 hover:bg-slate-800 active:bg-slate-700 flex-shrink-0"
+      class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 glass transition-colors duration-150 hover:bg-white/10 active:bg-white/15 flex-shrink-0"
       on:click={closeSocket}
       title="Disconnect">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

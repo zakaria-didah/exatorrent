@@ -78,7 +78,7 @@
     </div>
 
     <div class="mt-6 space-y-3">
-      <div class="flex bg-slate-900 rounded-lg border border-slate-700/40 overflow-hidden transition-all duration-150 focus-within:ring-1 focus-within:ring-violet-500/50 focus-within:border-violet-500/50">
+      <div class="flex bg-white/5 rounded-lg border border-white/10 glass overflow-hidden transition-all duration-150 focus-within:ring-1 focus-within:ring-violet-500/50 focus-within:border-violet-500/50">
         {#if ismetainfo}
           <input
             id="torrentinput"
@@ -101,7 +101,7 @@
         {/if}
         <button
           type="button"
-          class="flex items-center justify-center w-11 flex-shrink-0 transition-colors duration-150 hover:bg-slate-800"
+          class="flex items-center justify-center w-11 flex-shrink-0 transition-colors duration-150 hover:bg-white/10"
           on:click={toggleismetainfo}
           title={ismetainfo ? 'Switch to file upload' : 'Switch to magnet/infohash'}>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,7 +127,7 @@
 <div class="mx-auto max-w-lg px-4 mt-8">
   <div class="grid grid-cols-2 gap-3">
     <button
-      class="bg-slate-900 text-slate-200 px-4 py-4 rounded-lg border border-slate-700/40 transition-all duration-150 hover:bg-slate-800 hover:border-slate-600/50 active:bg-slate-700 flex items-center gap-3"
+      class="bg-white/5 text-slate-200 px-4 py-4 rounded-lg border border-white/10 glass transition-all duration-150 hover:bg-white/10 hover:border-white/15 active:bg-white/15 flex items-center gap-3"
       on:click={() => {
         slocation.goto('/torrents');
       }}>
@@ -137,7 +137,7 @@
       <span class="text-sm font-medium">Torrents</span>
     </button>
     <button
-      class="bg-slate-900 text-slate-200 px-4 py-4 rounded-lg border border-slate-700/40 transition-all duration-150 hover:bg-slate-800 hover:border-slate-600/50 active:bg-slate-700 flex items-center gap-3"
+      class="bg-white/5 text-slate-200 px-4 py-4 rounded-lg border border-white/10 glass transition-all duration-150 hover:bg-white/10 hover:border-white/15 active:bg-white/15 flex items-center gap-3"
       on:click={() => {
         slocation.goto('/settings');
       }}>
@@ -155,7 +155,7 @@
   {#if $isAdmin}
     <div class="grid grid-cols-2 gap-3 mt-3">
       <button
-        class="bg-slate-900 text-slate-200 px-4 py-4 rounded-lg border border-slate-700/40 transition-all duration-150 hover:bg-slate-800 hover:border-slate-600/50 active:bg-slate-700 flex items-center gap-3"
+        class="bg-white/5 text-slate-200 px-4 py-4 rounded-lg border border-white/10 glass transition-all duration-150 hover:bg-white/10 hover:border-white/15 active:bg-white/15 flex items-center gap-3"
         on:click={() => {
           slocation.goto('/users');
         }}>
@@ -165,7 +165,7 @@
         <span class="text-sm font-medium">Users</span>
       </button>
       <button
-        class="bg-slate-900 text-slate-200 px-4 py-4 rounded-lg border border-slate-700/40 transition-all duration-150 hover:bg-slate-800 hover:border-slate-600/50 active:bg-slate-700 flex items-center gap-3"
+        class="bg-white/5 text-slate-200 px-4 py-4 rounded-lg border border-white/10 glass transition-all duration-150 hover:bg-white/10 hover:border-white/15 active:bg-white/15 flex items-center gap-3"
         on:click={() => {
           slocation.goto('/stats');
         }}>

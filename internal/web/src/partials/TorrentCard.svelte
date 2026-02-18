@@ -74,9 +74,8 @@
   });
 </script>
 
-<div class="group bg-slate-900 rounded-lg overflow-hidden transition-all duration-200 hover:bg-slate-800/80 border border-slate-700/40 hover:border-slate-600/50">
+<div class="group bg-white/5 rounded-lg overflow-hidden transition-all duration-200 hover:bg-white/[0.08] border border-white/10 hover:border-white/15 glass">
   <div class="flex">
-    <!-- Poster -->
     {#if isTorrentPage === false}
       <button
         type="button"
@@ -106,7 +105,6 @@
       </div>
     {/if}
 
-    <!-- Info -->
     <div class="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-between">
       <div>
         <div class="flex items-center justify-between gap-2 mb-1">
@@ -124,7 +122,7 @@
             {#if category}
               <span class="text-xs px-1.5 py-0.5 rounded bg-violet-900/40 text-violet-300 border border-violet-700/30">{category}</span>
             {/if}
-            <span class="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+            <span class="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-white/10 text-slate-400">
               <span class="w-1.5 h-1.5 rounded-full {isSeeding ? 'bg-violet-400' : isActive ? 'bg-violet-500' : 'bg-slate-500'}"></span>
               {stateLabel}
             </span>
@@ -135,7 +133,7 @@
 
         {#if state === 'active' || state === 'inactive'}
           <div class="space-y-1">
-            <div class="bg-slate-800 rounded-full overflow-hidden h-1">
+            <div class="bg-white/10 rounded-full overflow-hidden h-1">
               <div
                 class="h-full rounded-full transition-all duration-500 ease-out bg-violet-500"
                 style="width:{progpercentage ? progpercentage : 0}%"></div>
@@ -148,15 +146,14 @@
         {/if}
       </div>
 
-      <!-- Actions -->
       <div class="flex items-center gap-1 mt-2 -mb-1">
         {#if state === 'active' || state === 'loading' || state === 'inactive'}
-          <button type="button" aria-label="Remove" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label="Remove" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => { Send({ command: 'removetorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); }}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         {:else if state === 'removed'}
-          <button type="button" aria-label="Delete" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label="Delete" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => { Send({ command: 'deletetorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); if (isTorrentPage) { slocation.goto('/'); } else { refresh(); Send({ command: 'gettorrents' }); } }}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
@@ -170,29 +167,29 @@
             </svg>
           </div>
         {:else if state === 'active'}
-          <button type="button" aria-label="Stop" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label="Stop" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => { Send({ command: 'stoptorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); refresh(); }}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="6" y="6" width="12" height="12" rx="1" stroke-width="2" /></svg>
           </button>
         {:else if state === 'removed'}
-          <button type="button" aria-label="Re-add" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label="Re-add" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => { Send({ command: 'addinfohash', data1: infohash }); refresh(); }}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
           </button>
         {:else if state === 'inactive'}
-          <button type="button" aria-label="Start" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label="Start" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => { Send({ command: 'starttorrent', data1: infohash, ...($adminmode === true && { aop: 1 }) }); refresh(); }}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
           </button>
         {/if}
 
         {#if isTorrentPage === false}
-          <button type="button" aria-label="View" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label="View" class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => slocation.goto(`/torrent/${infohash}`)}>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
           </button>
         {:else}
-          <button type="button" aria-label={locked ? 'Locked' : 'Unlocked'} class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-slate-800"
+          <button type="button" aria-label={locked ? 'Locked' : 'Unlocked'} class="p-1.5 rounded transition-colors duration-150 text-slate-500 hover:text-violet-400 hover:bg-white/10"
             on:click={() => { Send({ command: 'toggletorrentlock', data1: infohash }); setTimeout(() => { Send({ command: 'istorrentlocked', data1: infohash }); }, 1000); }}>
             {#if locked}
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>

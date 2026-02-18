@@ -91,7 +91,7 @@
 <div class="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
   {#if $terrormsg?.has === false}
     {#if $isAdmin === true && $adminmode === true}
-      <div class="flex items-center justify-between bg-slate-900 rounded-lg mt-4 px-4 py-3 border border-slate-700/40">
+      <div class="flex items-center justify-between bg-white/5 glass rounded-lg mt-4 px-4 py-3 border border-white/10">
         <span class="text-slate-300 text-sm font-medium">Admin Mode</span>
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" class="sr-only peer" bind:checked={$adminmode} />
@@ -110,13 +110,13 @@
             type="text"
             placeholder="Search torrents..."
             bind:value={searchQuery}
-            class="w-full bg-slate-900 border border-slate-700/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150" />
+            class="w-full bg-white/5 border border-white/10 glass rounded-lg pl-9 pr-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150" />
         </div>
       </div>
       <div class="flex gap-2 items-center flex-wrap">
         <select
           bind:value={stateFilter}
-          class="bg-slate-900 border border-slate-700/40 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all duration-150 appearance-none cursor-pointer">
+          class="bg-white/5 border border-white/10 glass rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all duration-150 appearance-none cursor-pointer">
           <option value="all">All States</option>
           <option value="active">Active</option>
           <option value="inactive">Stopped</option>
@@ -127,7 +127,7 @@
         {#if availableCategories.length > 0}
           <select
             bind:value={categoryFilter}
-            class="bg-slate-900 border border-slate-700/40 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all duration-150 appearance-none cursor-pointer">
+            class="bg-white/5 border border-white/10 glass rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all duration-150 appearance-none cursor-pointer">
             <option value="all">All Categories</option>
             <option value="uncategorized">Uncategorized</option>
             {#each availableCategories as cat}
@@ -137,7 +137,7 @@
         {/if}
         <select
           bind:value={sortBy}
-          class="bg-slate-900 border border-slate-700/40 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all duration-150 appearance-none cursor-pointer">
+          class="bg-white/5 border border-white/10 glass rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all duration-150 appearance-none cursor-pointer">
           <option value="name">Sort: Name</option>
           <option value="progress">Sort: Progress</option>
           <option value="size">Sort: Size</option>

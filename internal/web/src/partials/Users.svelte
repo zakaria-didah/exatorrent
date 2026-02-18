@@ -57,10 +57,7 @@
 
   let userconnlistaction = () => {
     if (userconnlistOpen === false) {
-      Send({
-        command: 'listuserconns',
-        aop: 1
-      });
+      Send({ command: 'listuserconns', aop: 1 });
       userconnlistOpen = true;
     } else {
       userconnlistOpen = false;
@@ -69,10 +66,7 @@
 
   let manageUsersaction = () => {
     if (manageUsersOpen === false) {
-      Send({
-        command: 'getusers',
-        aop: 1
-      });
+      Send({ command: 'getusers', aop: 1 });
       manageUsersOpen = true;
     } else {
       manageUsersOpen = false;
@@ -80,54 +74,38 @@
   };
 
   let useraddaction = () => {
-    if (addUserOpen === false) {
-      addUserOpen = true;
-    } else {
-      addUserOpen = false;
-    }
+    addUserOpen = !addUserOpen;
   };
 </script>
 
-<!-- Signup Requests Section -->
-<div class="mx-auto max-w-5xl">
-  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
-    <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={signupRequestsaction}>
-        <p class="ml-3 font-medium truncate">Signup Requests</p>
-      </button>
-
-      {#if signupRequestsOpen}
-        <button
-          type="button"
-          aria-label="Refresh signup requests"
-          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0"
-          on:click={() => { Send({ command: 'getsignuprequests', aop: 1 }); }}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      {/if}
-
-      <button type="button" aria-label="Toggle signup requests" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={signupRequestsaction}>
+<div class="mx-auto max-w-5xl px-2 sm:px-0">
+  <!-- Signup Requests -->
+  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={signupRequestsaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); signupRequestsaction(); } }}>
+      <h3 class="font-medium text-slate-200">Signup Requests</h3>
+      <div class="flex items-center gap-2">
         {#if signupRequestsOpen}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+          <button type="button" aria-label="Refresh signup requests" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
+            on:click|stopPropagation={() => { Send({ command: 'getsignuprequests', aop: 1 }); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         {/if}
-      </button>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {signupRequestsOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </div>
 
-    <div class="flex flex-col">
-      {#if signupRequestsOpen}
+    {#if signupRequestsOpen}
+      <div class="px-4 pb-4 space-y-2">
         {#if $signuprequests.length === 0}
           <p class="text-slate-500 text-sm text-center py-4">No pending signup requests</p>
         {:else}
           {#each $signuprequests as req (req.id)}
-            <div class="text-slate-200 bg-slate-800/50 px-4 py-3 rounded-lg my-1 mx-1 border border-slate-700/30">
+            <div class="text-slate-200 bg-white/5 px-4 py-3 rounded-xl border border-white/[0.06]">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex-1 min-w-0">
                   <p class="font-medium text-sm">{req.username}</p>
@@ -148,7 +126,7 @@
                   </button>
                   <button
                     type="button"
-                    class="px-3 py-1.5 text-xs font-medium rounded-md bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors duration-150"
+                    class="px-3 py-1.5 text-xs font-medium rounded-md bg-white/10 hover:bg-white/15 text-slate-300 transition-colors duration-150"
                     on:click={() => {
                       Send({ command: 'declinesignup', data1: String(req.id), aop: 1 });
                       setTimeout(() => { Send({ command: 'getsignuprequests', aop: 1 }); }, 500);
@@ -160,201 +138,137 @@
             </div>
           {/each}
         {/if}
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
-</div>
 
-<!-- User Connections Section -->
-<div class="mx-auto max-w-5xl ">
-  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
-    <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={userconnlistaction}>
-        <p class="ml-3 font-medium  truncate">User Connections</p>
-      </button>
-
-      {#if userconnlistOpen === true}
-        <button
-          type="button"
-          aria-label="Refresh"
-          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0"
-          on:click={() => {
-            Send({
-              command: 'listuserconns',
-              aop: 1
-            });
-          }}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      {/if}
-
-      <button type="button" aria-label="Toggle user connections" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={userconnlistaction}>
-        {#if userconnlistOpen === true}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+  <!-- User Connections -->
+  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={userconnlistaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); userconnlistaction(); } }}>
+      <h3 class="font-medium text-slate-200">User Connections</h3>
+      <div class="flex items-center gap-2">
+        {#if userconnlistOpen}
+          <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
+            on:click|stopPropagation={() => { Send({ command: 'listuserconns', aop: 1 }); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         {/if}
-      </button>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {userconnlistOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </div>
 
-    <div class="flex flex-col">
-      {#if userconnlistOpen === true}
+    {#if userconnlistOpen}
+      <div class="px-4 pb-4 space-y-2">
         {#each $userconnlist as eachuser (eachuser?.username)}
-          <div class="text-slate-200 bg-slate-900 px-1 py-3 rounded-md w-full my-1">
-            <div>
-              <div class="flex items-center justify-between flex-wrap py-1 mr-1">
-                <div class="w-0 flex-1 flex">
-                  <p class="font-medium  break-all mx-1">
-                    {eachuser?.username}
-                    {#if eachuser?.isadmin === true}(admin){/if}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  aria-label="Kick user"
-                  class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1"
-                  on:click={() => {
-                    Send({
-                      command: 'kickuser',
-                      data1: eachuser?.username,
-                      aop: 1
-                    });
-                  }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+          <div class="text-slate-200 bg-white/5 px-4 py-3 rounded-xl border border-white/[0.06]">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-sm break-all">
+                  {eachuser?.username}
+                  {#if eachuser?.isadmin === true}<span class="text-xs text-violet-400 ml-1">(admin)</span>{/if}
+                </p>
+                <p class="text-xs text-slate-500 mt-0.5">Connected at {new Date(eachuser?.contime)?.toLocaleString()}</p>
               </div>
+              <button
+                type="button"
+                aria-label="Kick user"
+                class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150 flex-shrink-0"
+                on:click={() => { Send({ command: 'kickuser', data1: eachuser?.username, aop: 1 }); }}>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <p class="text-sm  font-extralight truncate mx-1">
-              Connected at {new Date(eachuser?.contime)?.toLocaleString()}
-            </p>
           </div>
         {/each}
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
-</div>
 
-<div class="mx-auto max-w-5xl ">
-  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
-    <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={manageUsersaction}>
-        <p class="ml-3 font-medium  truncate">Manage Users</p>
-      </button>
-
-      {#if manageUsersOpen === true}
-        <button
-          type="button"
-          aria-label="Refresh"
-          class="flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0"
-          on:click={() => {
-            Send({
-              command: 'getusers',
-              aop: 1
-            });
-          }}>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      {/if}
-
-      <button type="button" aria-label="Toggle manage users" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={manageUsersaction}>
-        {#if manageUsersOpen === true}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+  <!-- Manage Users -->
+  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={manageUsersaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); manageUsersaction(); } }}>
+      <h3 class="font-medium text-slate-200">Manage Users</h3>
+      <div class="flex items-center gap-2">
+        {#if manageUsersOpen}
+          <button type="button" aria-label="Refresh" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors duration-150"
+            on:click|stopPropagation={() => { Send({ command: 'getusers', aop: 1 }); }}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         {/if}
-      </button>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {manageUsersOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </div>
 
-    <div class="flex flex-col">
-      {#if manageUsersOpen === true}
+    {#if manageUsersOpen}
+      <div class="px-4 pb-4 space-y-2">
         {#each $userlist as eachuser (eachuser?.Username)}
           <Useredit username={eachuser?.Username} selected={typenotostring(eachuser?.UserType)} timestring={new Date(eachuser?.CreatedAt)?.toLocaleString()} />
         {/each}
-      {/if}
-    </div>
+      </div>
+    {/if}
   </div>
-</div>
 
-<div class="mx-auto max-w-5xl ">
-  <div class="bg-slate-900 grid grid-flow-row text-white rounded-lg m-3 p-2 cursor-pointer focus:outline-none focus-within:bg-slate-900 noHL">
-    <div class="flex items-center justify-between flex-wrap py-1 px-3">
-      <button type="button" class="w-0 flex-1 flex items-center bg-transparent border-none p-0 text-left text-inherit cursor-pointer" on:click={useraddaction}>
-        <p class="ml-3 font-medium  truncate">Add User</p>
-      </button>
-
-      <button type="button" aria-label="Toggle add user" class="-mr-1 flex p-2 rounded-md bg-slate-900 focus:outline-none flex-shrink-0 mx-1" on:click={useraddaction}>
-        {#if addUserOpen === true}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        {/if}
-      </button>
+  <!-- Add User -->
+  <div class="bg-white/5 glass rounded-xl m-3 overflow-hidden border border-white/10 noHL">
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div class="w-full flex items-center justify-between px-4 py-3 transition-colors duration-150 hover:bg-white/10 cursor-pointer" role="button" tabindex="0" on:click={useraddaction} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); useraddaction(); } }}>
+      <h3 class="font-medium text-slate-200">Add User</h3>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform duration-200 {addUserOpen ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
     </div>
 
-    <div class="flex flex-col">
-      {#if addUserOpen === true}
-        <div class="mt-2">
-          <label for="username" class="sr-only">Username</label>
+    {#if addUserOpen}
+      <div class="px-4 pb-4 space-y-3">
+        <input id="username" name="email" type="text" bind:value={newusername} required
+               class="bg-white/5 appearance-none rounded-xl w-full px-3.5 py-2.5 border border-white/[0.06] placeholder-slate-500 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+               placeholder="Username" />
 
-          <input id="username" name="email" type="text" bind:value={newusername} required class="bg-slate-900 appearance-none rounded-md w-full px-3 py-2 border border-slate-700/40 placeholder-slate-500 text-slate-200 focus:outline-none" placeholder="Username" />
-
-          <label for="password" class="sr-only">Password</label>
-
-          <div class="flex bg-slate-900 rounded-md my-2 appearance-none border border-slate-700/40 w-full">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              bind:value={newpassword}
-              bind:this={pwbox}
-              required
-              class="bg-slate-900 appearance-none rounded-md w-full flex-grow px-3 py-2 border-none placeholder-slate-500 text-slate-200 focus:outline-none"
-              placeholder="Password" />
-            <button type="button" class="focus:outline-none focus:text-violet-400" on:click={toggleinput}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 my-2 mx-2 flex-grow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {#if pwvisible}
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                {:else}
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                {/if}
-              </svg>
-            </button>
-          </div>
-
-          <select class="bg-slate-900 rounded-md w-full flex-grow px-3 py-2 border-none placeholder-slate-500 text-slate-200 focus:outline-none" bind:value={newusertype}>
-            <option value="user">User</option>
-            <option value="disabled">Disabled</option>
-            <option value="admin">Admin</option>
-          </select>
-
-          <button type="button" on:click={addUser} class="w-full my-2 py-2 px-4 border-none text-sm font-medium rounded-md text-white bg-violet-600 outline-none focus:outline-none">Add User</button>
+        <div class="flex bg-white/5 rounded-xl border border-white/[0.06] overflow-hidden">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            bind:value={newpassword}
+            bind:this={pwbox}
+            required
+            class="bg-transparent w-full flex-grow px-3.5 py-2.5 border-none placeholder-slate-500 text-slate-200 text-sm focus:outline-none"
+            placeholder="Password" />
+          <button type="button" class="flex items-center justify-center w-11 flex-shrink-0 transition-colors duration-150 hover:bg-white/10" on:click={toggleinput}>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {#if pwvisible}
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              {:else}
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              {/if}
+            </svg>
+          </button>
         </div>
-      {/if}
-    </div>
+
+        <select class="bg-white/5 rounded-xl w-full px-3.5 py-2.5 border border-white/[0.06] text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/40 appearance-none cursor-pointer" bind:value={newusertype}>
+          <option value="user">User</option>
+          <option value="disabled">Disabled</option>
+          <option value="admin">Admin</option>
+        </select>
+
+        <button type="button" on:click={addUser}
+                class="w-full py-2.5 px-4 text-sm font-medium rounded-xl text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-violet-500/50">
+          Add User
+        </button>
+      </div>
+    {/if}
   </div>
 </div>

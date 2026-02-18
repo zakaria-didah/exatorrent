@@ -93,39 +93,7 @@
   };
 </script>
 
-<style>
-  @keyframes gradientShift {
-    0% { background-position: 0% 0%; }
-    50% { background-position: 100% 100%; }
-    100% { background-position: 0% 0%; }
-  }
-  .gradient-bg {
-    background: linear-gradient(135deg,
-      #020617 0%,
-      #0f0a2e 20%,
-      #1a0b3e 35%,
-      #0c0926 50%,
-      #140d30 65%,
-      #0a0720 80%,
-      #020617 100%
-    );
-    background-size: 400% 400%;
-    animation: gradientShift 25s ease infinite;
-  }
-  .noise-overlay {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-  }
-  .glass-card {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-</style>
-
-<div class="gradient-bg fixed inset-0 min-h-screen">
-  <div class="noise-overlay fixed inset-0 pointer-events-none"></div>
-
-  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+<div class="min-h-screen flex items-center justify-center px-4">
     <div class="max-w-sm w-full">
       <div class="text-center mb-10">
         <a href="https://github.com/zakaria-didah/exatorrent" target="_blank" rel="noopener noreferrer" class="inline-block group">
@@ -136,7 +104,7 @@
         <p class="mt-3 text-sm text-slate-500 tracking-wide uppercase font-medium">Stream torrent</p>
       </div>
 
-      <div class="glass-card bg-slate-900/30 rounded-2xl border border-slate-700/30 p-7 shadow-2xl shadow-violet-950/20">
+      <div class="glass bg-slate-900/30 rounded-2xl border border-slate-700/30 p-7 shadow-2xl shadow-violet-950/20">
         {#if mode === 'signin'}
           <div>
             <h2 class="text-lg font-semibold text-slate-200 mb-5">Sign in</h2>
@@ -283,5 +251,4 @@
 
       <p class="text-center text-slate-700 text-xs mt-8">Powered by exatorrent</p>
     </div>
-  </div>
 </div>

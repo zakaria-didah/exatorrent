@@ -4,9 +4,7 @@
 
   onMount(() => {
     if ($versionchecked === false) {
-      Send({
-        command: 'version'
-      });
+      Send({ command: 'version' });
     }
   });
 </script>
@@ -17,7 +15,7 @@
   <p class="text-center mb-5 font-mono text-slate-400">Version: {$versionstr}</p>
   <div class="flex justify-around">
     <a href="https://github.com/zakaria-didah/exatorrent" target="_blank" rel="noopener noreferrer">
-      <button type="button" class="my-2 mx-2 flex justify-center py-3 px-4 border border-slate-700/40 text-sm font-medium rounded-lg text-slate-200 bg-slate-900 hover:bg-slate-800 noHL font-mono focus:outline-none transition-colors duration-150">Source</button>
+      <button type="button" class="my-2 mx-2 flex justify-center py-3 px-4 border border-white/10 text-sm font-medium rounded-lg text-slate-200 bg-white/5 glass hover:bg-white/10 noHL font-mono focus:outline-none transition-colors duration-150">Source</button>
     </a>
   </div>
 </div>

@@ -11,7 +11,7 @@
 </script>
 
 <div class="space-y-1.5 mt-1">
-  <div class="bg-slate-800 rounded-full overflow-hidden h-1.5">
+  <div class="bg-white/10 rounded-full overflow-hidden h-1.5">
     <div class="bg-violet-500 h-full rounded-full transition-all duration-500 ease-out" style="width:{progress ? progress : 0}%"></div>
   </div>
   <div class="text-slate-400 flex justify-between text-xs font-medium">
