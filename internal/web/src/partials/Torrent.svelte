@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Send, adminmode, torrentstats, isAdmin, usersfortorrent, torctime, torrentinfo, fileSize, fileType, torrentfiles, fileviewpath, fileviewinfohash, istrntlocked } from './core';
-  import slocation from 'slocation';
+  import { Send, adminmode, torrentstats, isAdmin, usersfortorrent, torctime, torrentinfo, fileSize, fileType, torrentfiles, fileviewpath, fileviewinfohash, istrntlocked, slocation } from './core';
   import TorrentCard from './TorrentCard.svelte';
   import CollapsibleSection from './CollapsibleSection.svelte';
   import type { DlObject } from './core';

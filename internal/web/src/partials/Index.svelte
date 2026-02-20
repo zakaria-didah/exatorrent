@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { dontstart, Send, isAdmin } from './core';
-  import slocation from 'slocation';
+  import { dontstart, Send, isAdmin, slocation } from './core';
   import { toast } from 'svelte-sonner';
   let ismetainfo = true;
   let torrentinput = '';

@@ -1,8 +1,24 @@
 import { writable, get } from 'svelte/store';
 import type { Writable } from 'svelte/store';
-import slocation from 'slocation';
 import { toast } from 'svelte-sonner';
 
+// Client-side router: store + goto (replacement for removed slocation npm package)
+const { subscribe, set } = writable<Location>(typeof window !== 'undefined' ? window.location : ({} as Location));
+function updateLoc() {
+  if (typeof window !== 'undefined') set(window.location);
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', updateLoc);
+}
+
+export const slocation = {
+  subscribe,
+  goto(path: string) {
+    if (typeof window === 'undefined') return;
+    window.history.pushState({}, '', path);
+    set(window.location);
+  }
+};
 export interface DlObject {
   infohash: string;
   name?: string;

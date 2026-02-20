@@ -1,6 +1,5 @@
 <script lang="ts">
-  import slocation from 'slocation';
-  import { resplist } from './core';
+  import { resplist, slocation } from './core';
 </script>
 
 <div class="mx-auto max-w-5xl px-3">

@@ -9,10 +9,10 @@
     engconfig,
     fileSize,
     diskstats,
-    nooftrackersintrackerdb
+    nooftrackersintrackerdb,
+    slocation
   } from './core';
   import CollapsibleSection from './CollapsibleSection.svelte';
-  import slocation from 'slocation';
   import { toast } from 'svelte-sonner';
 
   let ds = false;

@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { torcstatus, machinfo, machstats, Send, fileSize, hasMachinfo, isAdmin } from './core';
+  import { torcstatus, machinfo, machstats, Send, fileSize, hasMachinfo, isAdmin, slocation } from './core';
   import { onMount } from 'svelte';
-  import slocation from 'slocation';
   import CollapsibleSection from './CollapsibleSection.svelte';
 
   let deviceinfoOpen = false;

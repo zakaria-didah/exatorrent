@@ -1,13 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import slocation from 'slocation';
+  import { Send, slocation } from './core';
 
   onMount(() => {
     oldselected = selected;
     utchangeallowed = true;
   });
-
-  import { Send } from './core';
   import { toast } from 'svelte-sonner';
 
   export let username = '';

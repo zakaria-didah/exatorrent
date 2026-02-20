@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Send, fileviewpath, fileviewinfohash, fsfileinfo, fileType, socket, fileSize, filepagediscon } from './core';
-  import slocation from 'slocation';
+  import { Send, fileviewpath, fileviewinfohash, fsfileinfo, fileType, socket, fileSize, filepagediscon, slocation } from './core';
   import { onDestroy, onMount } from 'svelte';
 
   let stream = false;

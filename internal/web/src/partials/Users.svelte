@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Send, userconnlist, userlist, isAdmin, signuprequests } from './core';
-  import slocation from 'slocation';
+  import { Send, userconnlist, userlist, isAdmin, signuprequests, slocation } from './core';
   import CollapsibleSection from './CollapsibleSection.svelte';
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';

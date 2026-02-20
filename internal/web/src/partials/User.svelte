@@ -1,7 +1,6 @@
 <script lang="ts">
-  import slocation from 'slocation';
   import { onMount } from 'svelte';
-  import { torrentsforuser, Send, adminmode, isAdmin } from './core';
+  import { torrentsforuser, Send, adminmode, isAdmin, slocation } from './core';
 
   let username = $slocation.pathname?.split('/').reverse()[0];
 
