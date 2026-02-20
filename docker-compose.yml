@@ -1,0 +1,18 @@
+services:
+  exatorrent:
+    build: .
+    container_name: exatorrent
+    restart: unless-stopped
+    ports:
+      - "5000:5000"   # Web UI & API
+      - "42069:42069" # DHT / BitTorrent
+    volumes:
+      - exatorrent_data:/exa/exadir
+    environment:
+      # Optional: set default admin password (must also pass -passw to CMD)
+      # EXAPASSWORD: "your-secure-password"
+      # Optional: TMDB API key for movie posters (or pass -tmdbkey in command)
+      # TMDB_API_KEY: "your-tmdb-key"
+
+volumes:
+  exatorrent_data:
