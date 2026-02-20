@@ -9,9 +9,9 @@ ADD internal/web /exa/internal/web
 ADD Makefile /exa/
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 RUN export NVM_DIR="$HOME/.nvm" ; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"; [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-RUN nvm install 20
-RUN nvm use 20
-RUN make web
+RUN . "$NVM_DIR/nvm.sh" && nvm install 20
+RUN . "$NVM_DIR/nvm.sh" && nvm use 20
+RUN . "$NVM_DIR/nvm.sh" && make web
 
 # Build the application from source
 FROM docker.io/golang:1.24-bookworm AS build-go
