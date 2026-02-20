@@ -9,10 +9,10 @@ services:
     volumes:
       - exatorrent_data:/exa/exadir
     environment:
+      TMDB_API_KEY: "f7ea7ec778037359fec48c0966c57814"
       # Optional: set default admin password (must also pass -passw to CMD)
       # EXAPASSWORD: "your-secure-password"
       # Optional: TMDB API key for movie posters (or pass -tmdbkey in command)
-      # TMDB_API_KEY: "your-tmdb-key"
 
 volumes:
   exatorrent_data:
