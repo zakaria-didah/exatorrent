@@ -1,85 +1,115 @@
-# *exatorrent*
-## 🧲 self-hostable torrent client
+# exatorrent
 
-![GitHub Repo stars](https://img.shields.io/github/stars/varbhat/exatorrent)
-![Latest Release](https://img.shields.io/github/release/varbhat/exatorrent)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/varbhat/exatorrent)
-![GitHub License](https://img.shields.io/github/license/varbhat/exatorrent?logoColor=violet)
+## Self-hostable torrent client with a modern web UI
+
+![Latest Release](https://img.shields.io/github/v/release/zakaria-didah/exatorrent)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/zakaria-didah/exatorrent)
+![GitHub License](https://img.shields.io/github/license/zakaria-didah/exatorrent)
 
 ![Linux](https://img.shields.io/badge/Linux-%23.svg?logo=linux&color=FCC624&logoColor=black)
 ![macOS](https://img.shields.io/badge/macOS-%23.svg?logo=apple&color=000000&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-%23.svg?logo=windows&color=0078D6&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%23.svg?logo=docker&color=1D63ED&logoColor=white)
-![Podman](https://img.shields.io/badge/podman-%23.svg?logo=podman&color=734392&logoColor=white)
 
-<p><a href="docs/screenshots.md">Screenshots</a> &bull; <a href="https://github.com/varbhat/exatorrent/releases/latest">Releases</a> &bull; <a href="#features">Features</a> &bull; <a href="#usage"> Installation </a> &bull; <a href="docs/usage.md"> Usage</a> &bull; <a href="docs/docker.md">Docker</a> &bull; <a href="docs/build.md"> Build </a> &bull; <a href="LICENSE">License</a></p>
-<hr>
+<p><a href="docs/screenshots.md">Screenshots</a> · <a href="#features">Features</a> · <a href="#usage">Installation</a> · <a href="docs/usage.md">Usage</a> · <a href="docs/docker.md">Docker</a> · <a href="docs/build.md">Build</a> · <a href="docs/API.md">API</a> · <a href="LICENSE">License</a></p>
 
-* exatorrent is Elegant [BitTorrent](https://www.bittorrent.org/) Client written in [Go](https://go.dev/).
-* It is Simple, easy to use, yet feature rich.
-* It can be run locally or be hosted in Remote Server with good resources.
-* It is Single Completely Statically Linked Binary with Zero External Dependencies.
-* It is lightweight and light on resources.
-* It comes with Beautiful Responsive Web Client written in Svelte and Typescript.
-* Thanks to documented [WebSocket](https://datatracker.ietf.org/doc/html/rfc6455) [API](docs/API.md) of exatorrent, custom client can be created.
-* It supports Single User Mode and Multi User Mode.
-* Torrented Files are stored in local disk can be downloaded and streamed via HTTP/Browser/Media Players.
+---
 
-<hr>
-<p align="center">
-<img src="https://raw.githubusercontent.com/varbhat/exatorrent/assets/main.png" alt="exatorrent web client" width=400 height=550 />
-  <p align="center"><a href="docs/screenshots.md">More Screenshots →</a></p>
-</p>
-<hr>
+### What is exatorrent?
+
+**exatorrent** is a [BitTorrent](https://www.bittorrent.org/) client you run on your own machine or server. It comes with a web interface so you can add torrents, stream or download files, and manage everything from a browser or behind a reverse proxy (Nginx, Caddy, etc.).
+
+- **Single binary** — One statically linked executable, no extra runtime dependencies.
+- **Multi-user** — Several users can share the same instance; admins approve signups and set per-user storage quotas.
+- **Stream or download** — Open files in the browser, or use VLC, mpv, or any player that supports HTTP streams.
+- **Shared storage** — The same torrent is stored once on disk; multiple users can “have” the same torrent without duplicating data.
+- **Modern UI** — Dark theme, movie-style torrent cards, poster art (TMDB + video frame fallback), real-time progress, and a responsive layout.
+
+This project is a **fork** of [varbhat/exatorrent](https://github.com/varbhat/exatorrent), with additional features and UI changes. Credit for the original design and implementation goes to **[varbhat](https://github.com/varbhat)**.
+
+---
 
 ## Usage
-Exatorrent can be operated using either of the following methods:
-* **Releases:** You can download precompiled binary for your Operating System from [Releases](https://github.com/varbhat/exatorrent/releases/latest). Mark it as executable and run it. Refer [Usage](docs/usage.md).
-  ```bash
-  wget https://github.com/varbhat/exatorrent/releases/latest/download/exatorrent-linux-amd64
-  chmod u+x ./exatorrent-linux-amd64
-  ./exatorrent-linux-amd64
-  ```
- * **Docker:** Docker images of exatorrent are also provided which lets exatorrent to be run in a Docker container. See [Docker Docs](docs/docker.md).
-   ```bash
-   docker pull ghcr.io/varbhat/exatorrent:latest
-   docker run -p 5000:5000 -p 42069:42069 -v /path/to/directory:/exa/exadir ghcr.io/varbhat/exatorrent:latest
-   ```
- * **Manual Build:** exatorrent is open source and can be built from sources. See [Build Docs](docs/build.md).
-   ```bash
-   make web && make app
-   ```
 
-#### Notes:
-* Note that **Username** and **Password** of Default User created on first run are `adminuser` and `adminpassword` respectively.
-* You can change Password later but Username of Account can't be changed after creation. Refer [Usage](docs/usage.md#-admin).
-* [Github Actions](https://github.com/features/actions) is used to build and publish [Releases](https://github.com/varbhat/exatorrent/releases/latest) and [Docker Images](https://ghcr.io/varbhat/exatorrent) of exatorrent.
+You can run exatorrent in several ways:
 
+### Docker Compose (recommended)
+
+```bash
+git clone https://github.com/zakaria-didah/exatorrent
+cd exatorrent
+docker compose up -d --build
+```
+
+Then open **http://localhost:5000**. Data is stored in a Docker volume; see [docs/docker.md](docs/docker.md) for options and reverse-proxy examples.
+
+### Docker (single container)
+
+```bash
+docker run -p 5000:5000 -p 42069:42069 -v /path/to/data:/exa/exadir ghcr.io/zakaria-didah/exatorrent:latest
+```
+
+### Releases
+
+Download the binary for your OS from [Releases](https://github.com/zakaria-didah/exatorrent/releases), make it executable, and run:
+
+```bash
+./exatorrent-linux-amd64
+```
+
+See [docs/usage.md](docs/usage.md) for flags (`-addr`, `-dir`, `-admin`, `-passw`, etc.).
+
+### Build from source
+
+```bash
+make web && make app
+```
+
+See [docs/build.md](docs/build.md) for details.
+
+**Default login:** username `adminuser`, password `adminpassword`. Change the password after first login; you can set a custom admin username with `-admin` and password via `EXAPASSWORD` and `-passw` on first run.
+
+---
 
 ## Features
-* Single Executable File with No Dependencies
-* Small in Size
-* Cross Platform
-* Download (or Build ) Single Executable Binary and run. That's it
-* Open and Stream Torrents in your Browser
-* Add Torrents by Magnet or by Infohash or Torrent File
-* Individual File Control (Start, Stop or Delete )
-* Stop, Remove or Delete Torrent
-* Persistent between Sessions
-* Stop Torrent once SeedRatio is reached (Optional)
-* Perform Actions on Torrent [Completion](docs/config.md#actions-on-torrent-completion) (Optional)
-* Powered by [anacrolix/torrent](https://github.com/anacrolix/torrent)
-* Download/Upload [Rate limiter](docs/usage.md#rate-limiter) (Optional)
-* Apply [Blocklist](docs/usage.md#blocklist) (Optional)
-* [Configurable](docs/config.md) via Config File but works fine with Zero Configuration
-* Share Files by Unlocking Torrent or Lock Torrent (protect by Auth)  to prevent External Access
-* Retrieve or Stream Files via HTTP
-* Multi-Users with Authentication
-* Auto Add Trackers to Torrent from TrackerList URL
-* Auto Fetch Torrent Metainfo from Online/Local Metainfo Cache
-* Download Directory as Zip or as Tarball
-* Stream directly on Browser or [VLC](https://www.videolan.org/vlc/) or [mpv](https://mpv.io/) or other Media Players
-* [Documented API](docs/API.md)
+
+- **Core**
+  - Single executable, no external dependencies
+  - Cross-platform (Linux, macOS, Windows)
+  - Powered by [anacrolix/torrent](https://github.com/anacrolix/torrent)
+  - Add torrents via magnet, infohash, or .torrent file
+  - Per-file control (start, stop, delete)
+  - Stop, remove, or delete torrents; persistent across restarts
+  - Optional seed-ratio stop and [completion hooks](docs/config.md#actions-on-torrent-completion)
+  - [Documented WebSocket API](docs/API.md) for custom clients
+
+- **Multi-user & auth**
+  - Multi-user with authentication
+  - **Signup requests** — New users request access; admins approve or decline from the admin panel
+  - **Per-user storage quotas** (default 5 GB; admins can set per user; admins exempt)
+  - Session-based auth with HttpOnly cookies and proper logout
+
+- **UI & experience**
+  - Dark, responsive web client (Svelte + TypeScript)
+  - Movie-style torrent cards with **poster art** (TMDB API + video-frame fallback)
+  - **Categories/labels** (e.g. Movies, TV Shows, Music)
+  - **Sequential download** for better streaming
+  - Torrent detail page with inline stats, file list with play/VLC/download, and collapsible details
+  - Real-time progress and stats over WebSocket
+
+- **Sharing & access**
+  - Lock/unlock torrents (auth required to access when locked)
+  - Stream or download via HTTP; use in browser, VLC, mpv, or other players
+  - Download directories as ZIP or tarball
+  - Optional [rate limiting](docs/usage.md#rate-limiter) and [blocklist](docs/usage.md#blocklist)
+
+- **Config**
+  - [Runtime config](docs/config.md) via `engconfig.json` (generate with `-engc`)
+  - Optional torrent client config via `clientconfig.json` (generate with `-torc`)
+  - Works with zero configuration
+
+---
 
 ## License
-[GPL-v3](LICENSE)
+
+[GPL-3.0-or-later](LICENSE)

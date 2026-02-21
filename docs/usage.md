@@ -1,16 +1,24 @@
 ## Usage
+
+When using Docker, the easiest way is [Docker Compose](https://docs.docker.com/compose/): from the repo root run `docker compose up -d --build` and open http://localhost:5000. See [docker.md](docker.md) for details and reverse-proxy examples.
+
+Command-line flags when running the binary:
+
 ```bash
 Usage of exatorrent:
- -addr    <addr> Listen Address (Default: ":5000")
- -admin   <user> Default admin username (Default Username: "adminuser" and Default Password: "adminpassword")
- -cert    <path> Path to TLS Certificate (Required for HTTPS)
- -dir     <path> exatorrent Directory (Default: "exadir")
- -engc    <opt>  Generate Custom Engine Configuration
- -key     <path> Path to TLS Key (Required for HTTPS)
- -passw   <opt>  Set Default admin password from "EXAPASSWORD" environment variable
- -torc    <opt>  Generate Custom Torrent Client Configuration
- -unix    <path> Unix Socket Path
- -help    <opt>  Print this Help
+ -addr     <addr> Listen Address (Default: ":5000")
+ -admin    <user> Default admin username (Default: "adminuser" / "adminpassword")
+ -cert     <path> Path to TLS Certificate (Required for HTTPS)
+ -dir      <path> exatorrent data directory (Default: "exadir")
+ -engc     <opt>  Generate sample Engine Configuration (engconfig.json)
+ -key      <path> Path to TLS Key (Required for HTTPS)
+ -loglevel <level> Log level: debug, info, warn, error (Default: "info")
+ -logjson  <opt>  Output logs in JSON format
+ -passw    <opt>  Set default admin password from "EXAPASSWORD" environment variable
+ -torc     <opt>  Generate sample Torrent Client Configuration (clientconfig.json)
+ -tmdbkey  <key>  TMDB API key for movie poster lookup in the web UI
+ -unix     <path> Unix Socket Path (alternative to -addr)
+ -help     <opt>  Print this Help
  ```
 
  ### `-addr`
@@ -58,6 +66,11 @@ Writes Sample Runtime-Configurable Engine connection URL to `<exadirectory>/conf
 ### `-torc`
 Writes Sample Torrent Client connection URL to `<exadirectory>/config/clientconfig.json` . These settings cannot be configured during runtime and must only be configured before starting `exatorrent` .
 
+### `-tmdbkey`
+Optional [TMDB](https://www.themoviedb.org/) API key. When set, the web UI can fetch movie/TV poster art for torrents based on their name. Without it, posters fall back to video-frame thumbnails when available.
+
+### `-loglevel`
+Set log verbosity: `debug`, `info`, `warn`, or `error`. Default is `info`. Use with `-logjson` for JSON-structured logs.
 
 ## Blocklist
 Blocklist of PeerGuardian Text Lists (P2P) Format can be placed at `<exadirectory>/config/blocklist` to apply blocking based upon blocklist . You are also required to set `IPBlocklist` value of `clentconfig.json` to `true` . Note that Blocklist can't be changed during runtime .
